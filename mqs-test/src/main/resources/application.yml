@@ -1,0 +1,23 @@
+mqs:
+  rocketmq:
+    rocketmq32:
+      group-name: MQS_TEST
+      consume-message-batch-max-size: 20
+      consume-thread-min: 10
+      consume-thread-max: 15
+      client-config:
+        namesrv-addr: 10.100.15.32:9876
+    rocketmq128:
+      group-name: MQS_TEST
+      client-config:
+        namesrv-addr: 192.168.175.128:9876
+  kafka:
+    kafka33:
+      group-name: MQS_TEST
+      client-config:
+        bootstrap.servers: 192.168.175.128:9092,192.168.175.128:19092,192.168.175.128:29092
+logging:
+  config: classpath:spring-logback.xml
+  level:
+    root: INFO
+    health: INFO

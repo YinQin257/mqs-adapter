@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="10 seconds">
+	<springProperty scope="context" name="logLevel" source="logging.level.root"/>
+	<springProperty scope="context" name="logHeathLevel" source="logging.level.health"/>
+	<springProperty scope="context" name="LOG_PATH" source="logging.path"/>
+	<springProperty scope="context" name="LOG_PREFIX" source="spring.application.name" />
+	<logger name="com.hzwq.micro" level="${logLevel:-INFO}" />
+	<logger name="org.apache.http.wire" level="${logHeathLevel:-INFO}" />
+	<logger name="org.apache.http.headers" level="${logHeathLevel:-INFO}" />
+	<logger name="org.apache.http.impl.conn" level="${logHeathLevel:-INFO}" />
+	<logger name="org.apache.http.client.protocol" level="${logHeathLevel:-INFO}" />
+	<logger name="org.apache.http.impl.execchain" level="${logHeathLevel:-INFO}" />
+	<logger name="org.springframework.core.env" level="${logHeathLevel:-INFO}" />
+	<appender name="DEBUG_FILE"
+			  class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!-- 日志记录器的滚动策略，按日期，按大小记录 （配置日志所生成的目录以及生成文件名的规则 在logs/mylog-2017-06-31.0.log.zip）-->
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!--
+                  归档的日志文件的路径，
+                  例如今天是2018-03-21日志，当前写的日志文件路径为file节点指定，可以将此文件与file指定文件路径设置为不同路径，
+                  从而将当前日志文件或归档日志文件置不同的目录。
+                  而2018-03-21的日志文件在由fileNamePattern指定。%d{yyyy-MM-dd}指定日期格式，%i指定索引
+             -->
+			<fileNamePattern>${LOG_PATH}/${LOG_PREFIX}-debug-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<fileNamePattern>${LOG_PATH}/${LOG_PREFIX}-debug-%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+			<!-- 如果按天来回滚，则最大保存时间为365天，365天之前的都将被清理掉 -->
+			<maxHistory>365</maxHistory>
+			<!-- 日志总保存量为10GB -->
+			<totalSizeCap>10GB</totalSizeCap>
+			<!--
+			 除按日志记录之外，还配置了日志文件不能超过2M，若超过2M，日志文件会以索引0开始，
+           	 命名日志文件，
+           	 例如apigate-service-debug-2018-03-21.0.log
+			 -->
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<!--文件达到 最大128MB时会被压缩和切割 -->
+				<maxFileSize>128 MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>${logLevel:-INFO}</level>
+		</filter>
+		<!-- 文件输出的日志 的格式 -->
+		<encoder>
+			<pattern>
+				[${LOG_PREFIX}] [%date{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] [%thread]  %logger{124} - [%method,%line] - %msg%n
+			</pattern>
+			<!-- 此处设置字符集 -->
+			<charset>UTF-8</charset>
+		</encoder>
+		<!--
+		安全日志文件从多个JVMs一样。降低性能！
+		Safely log to the same file from multiple JVMs. Degrades performance! -->
+		<prudent>false</prudent>
+	</appender>
+
+	<!--控制台输出的格式设置 -->
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<!-- 控制台输出的日志 的格式 -->
+		<encoder>
+			<!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+			<pattern>
+				[${LOG_PREFIX}] [%date{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] [%thread]  %logger{124} - [%method,%line] - %msg%n
+			</pattern>
+			<!-- 此处设置字符集 -->
+			<charset>UTF-8</charset>
+		</encoder>
+		<!-- 只是DEBUG级别以上的日志才显示 -->
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>${logLevel:-INFO}</level>
+		</filter>
+	</appender>
+
+	<root level="${logLevel:-INFO}">
+		<!-- <appender-ref ref="FILE" /> -->
+		<appender-ref ref="DEBUG_FILE" />
+		<appender-ref ref="STDOUT" />
+	</root>
+</configuration>
