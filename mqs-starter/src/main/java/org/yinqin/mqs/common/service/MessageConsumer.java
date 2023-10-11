@@ -8,5 +8,5 @@ import org.springframework.beans.factory.DisposableBean;
  * &#064;date: 2023-09-28 11:44
  */
 public interface MessageConsumer extends DisposableBean {
-    public void start() throws Exception;
+    void start() throws Exception;
 }

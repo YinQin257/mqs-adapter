@@ -10,24 +10,20 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.yinqin.mqs.common.MessageAdapter;
 import org.yinqin.mqs.common.config.MqsProperties;
 import org.yinqin.mqs.common.handler.MessageHandler;
-import org.yinqin.mqs.common.service.MessageConsumer;
-import org.yinqin.mqs.common.MessageAdapter;
 import org.yinqin.mqs.common.manager.ConsumerManager;
+import org.yinqin.mqs.common.service.MessageConsumer;
 import org.yinqin.mqs.kafka.KafkaConsumer;
 import org.yinqin.mqs.rocketmq.RocketmqConsumer;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ThreadPoolExecutor;
 
 
 @Configuration

@@ -14,13 +14,13 @@ import java.util.concurrent.TimeUnit;
  */
 public interface MessageProducer extends DisposableBean {
 
-    public void start() throws Exception;
+    void start() throws Exception;
 
-    public MessageSendResult sendMessage(AdapterMessage message);
+    MessageSendResult sendMessage(AdapterMessage message);
 
-    public MessageSendResult sendMessage(AdapterMessage message, long timeout, TimeUnit unit);
+    MessageSendResult sendMessage(AdapterMessage message, long timeout, TimeUnit unit);
 
-    public void sendMessage(AdapterMessage message, MessageCallback callback);
+    void sendMessage(AdapterMessage message, MessageCallback callback);
 
     default void sendOneWay(AdapterMessage message){
         sendMessage(message,null);
