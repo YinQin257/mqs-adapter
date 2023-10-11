@@ -18,20 +18,32 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.yinqin.mqs.common.handler.MessageHandler;
 
 /**
- * &#064;description:
- * &#064;author: YinQin
- * &#064;date: 2023-10-10 16:04
+ * @description 拉取消息工作线程
+ * @author YinQin
+ * @createTime 2023-10-10 16:04
  */
 public class PollWorker implements Runnable{
 
     private final Logger logger = LoggerFactory.getLogger(PollWorker.class);
 
-    private AtomicBoolean closed = new AtomicBoolean(false);
+    /**
+     * 线程停止标记
+     */
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
+    /**
+     * 消费类型
+     */
     private final String consumerType;
 
+    /**
+     * kafka源生消费者
+     */
     private final KafkaConsumer<String, byte[]> kafkaConsumer;
 
+    /**
+     * 消息处理器集合
+     */
     private final Map<String, MessageHandler> messageHandlers;
 
     public PollWorker(String consumerType, KafkaConsumer<String, byte[]> kafkaConsumer, Map<String, MessageHandler> messageHandlers) {
@@ -45,7 +57,7 @@ public class PollWorker implements Runnable{
         while (!closed.get()) {
             try {
                 List<AdapterMessage> messages = fetchMessages();
-                if (messages == null || messages.isEmpty()) {
+                if (messages.isEmpty()) {
                     Thread.sleep(100);
                     continue;
                 }
@@ -54,8 +66,6 @@ public class PollWorker implements Runnable{
                 } else {
                     messages.forEach(this::consumeMessage);
                 }
-
-
             } catch (Exception e) {
 
             }
@@ -66,8 +76,11 @@ public class PollWorker implements Runnable{
         closed.set(true);
     }
 
+    /**
+     * 拉取消息
+     * @return 消息集合
+     */
     private List<AdapterMessage> fetchMessages() {
-        //手动提交offset
         ConsumerRecords<String, byte[]> records = kafkaConsumer.poll(Duration.ofMillis(100));
         Iterator<ConsumerRecord<String, byte[]>> iterator = records.iterator();
         List<AdapterMessage> messages = new ArrayList<>(records.count());
@@ -85,6 +98,10 @@ public class PollWorker implements Runnable{
         return messages;
     }
 
+    /**
+     * 按照topic分组批量消费消息
+     * @param messages 消息集合
+     */
     private void batchConsumeMessage(List<AdapterMessage> messages) {
         Map<String, List<AdapterMessage>> collect = messages.stream().collect(Collectors.groupingBy(AdapterMessage::getTopic, Collectors.toList()));
         try {
@@ -98,6 +115,10 @@ public class PollWorker implements Runnable{
         }
     }
 
+    /**
+     * 单条消费消息
+     * @param message 消息
+     */
     private void consumeMessage(AdapterMessage message) {
         MessageHandler messageHandler = messageHandlers.get(message.getTopic());
         try {

@@ -14,14 +14,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * &#064;description:
- * &#064;author: YinQin
- * &#064;date: 2023-10-09 18:44
+ * @description 批量消息监听器
+ * @author YinQin
+ * @createTime 2023-10-09 18:44
  */
 public class BatchMessageListener implements MessageListenerConcurrently {
 
     private final Logger logger = LoggerFactory.getLogger(BatchMessageListener.class);
 
+    /**
+     * 消息处理器集合
+     */
     private final Map<String, MessageHandler> messageHandlers;
 
     public BatchMessageListener(Map<String, MessageHandler> messageHandlers) {

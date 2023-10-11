@@ -14,7 +14,11 @@ import org.yinqin.mqs.common.manager.ProducerManager;
 import org.yinqin.mqs.kafka.KafkaProducer;
 import org.yinqin.mqs.rocketmq.RocketmqProducer;
 
-
+/**
+ * @description 消息适配器生产者自动装配类，将生产者管理器注入IOC容器，通过自定义组件名称获取对应的生产者
+ * @author YinQin
+ * @createTime 2023-09-28 11:44
+ */
 @Configuration
 @EnableConfigurationProperties({ MqsProperties.class })
 public class ProducerAutoConfiguration {
@@ -25,6 +29,9 @@ public class ProducerAutoConfiguration {
     public ProducerManager getProducerManager (MqsProperties properties) {
         ProducerManager producerManager = new ProducerManager();
         properties.getRocketmq().forEach((vendorName, item) -> {
+
+            if (!item.isProducerEnabled()) return;
+
             // check properties
             if (StringUtils.isBlank(item.getGroupName())) {
                 logger.error("生产者{}启动失败,groupName不能为空",vendorName);
@@ -45,6 +52,8 @@ public class ProducerAutoConfiguration {
             }
         });
         properties.getKafka().forEach((vendorName, item) -> {
+
+            if (!item.isProducerEnabled()) return;
             // check properties
             if (StringUtils.isBlank(item.getGroupName())) {
                 logger.error("生产者{}启动失败,groupName不能为空",vendorName);

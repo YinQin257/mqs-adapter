@@ -21,22 +21,32 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
- * &#064;description: rocketmq生产者实现
- * &#064;author: YinQin
- * &#064;date: 2023-09-28 14:25
+ * @description rocketmq生产者
+ * @author YinQin
+ * @createTime 2023-09-28 14:25
  */
 public class RocketmqProducer implements MessageProducer {
 
     private final Logger logger = LoggerFactory.getLogger(RocketmqProducer.class);
 
+    /**
+     * rocketmq配置类
+     */
     private final RocketmqProperties rocketmqProperties;
 
+    /**
+     * 源生rocketmq生产者
+     */
     private DefaultMQProducer producer;
 
     public RocketmqProducer (RocketmqProperties rocketmqProperties) {
         this.rocketmqProperties = rocketmqProperties;
     }
 
+    /**
+     * 启动rocketmq生产者
+     * @throws Exception none
+     */
     @Override
     public void start() throws Exception {
         logger.debug("rocketmq生产者启动中，启动配置：{}", rocketmqProperties.toString());
@@ -51,6 +61,11 @@ public class RocketmqProducer implements MessageProducer {
         producer.start();
     }
 
+    /**
+     * 同步发送消息方法
+     * @param adapterMessage 消息
+     * @return 消息处理结果
+     */
     @Override
     public MessageSendResult sendMessage(AdapterMessage adapterMessage) {
         Message message = AdapterMessageToMessage(adapterMessage);
@@ -73,6 +88,13 @@ public class RocketmqProducer implements MessageProducer {
         return messageSendResult;
     }
 
+    /**
+     * 同步发送消息方法
+     * @param adapterMessage 消息
+     * @param timeout 同步等待时间
+     * @param unit 时间单位
+     * @return 消息处理结果
+     */
     @Override
     public MessageSendResult sendMessage(AdapterMessage adapterMessage, long timeout, TimeUnit unit) {
         Message message = AdapterMessageToMessage(adapterMessage);
@@ -94,6 +116,11 @@ public class RocketmqProducer implements MessageProducer {
         return messageSendResult;
     }
 
+    /**
+     * 异步发送消息方法
+     * @param adapterMessage 消息
+     * @param callback 消息发送结果回调
+     */
     @Override
     public void sendMessage(AdapterMessage adapterMessage, MessageCallback callback) {
         Message message = AdapterMessageToMessage(adapterMessage);
@@ -115,11 +142,19 @@ public class RocketmqProducer implements MessageProducer {
         }
     }
 
+    /**
+     * 停止rocketmq生产者
+     */
     @Override
     public void destroy() {
         producer.shutdown();
     }
 
+    /**
+     * 适配器消息转源生消息
+     * @param message 适配器消息
+     * @return rocketmq源生消息
+     */
     public Message AdapterMessageToMessage(AdapterMessage message) {
         return new Message(message.getTopic(), message.getTag(), message.getBizKey(), message.getBody());
     }

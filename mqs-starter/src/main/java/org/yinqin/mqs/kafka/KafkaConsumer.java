@@ -15,25 +15,53 @@ import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
- * &#064;description:
- * &#064;author: YinQin
- * &#064;date: 2023-10-10 15:19
+ * @description kafka消费者
+ * @author YinQin
+ * @createTime 2023-10-10 15:19
  */
 public class KafkaConsumer implements MessageConsumer {
 
     private final Logger logger = LoggerFactory.getLogger(KafkaConsumer.class);
 
+    /**
+     * kafka配置类
+     */
     private final KafkaProperties kafkaProperties;
 
+    /**
+     * 批量消费处理器合集
+     * key：topic
+     * value：消息处理器
+     */
     private final Map<String, MessageHandler> messageHandlers;
 
+    /**
+     * 单条消费处理器合集
+     * key：topic
+     * value：消息处理器
+     */
     private final Map<String, MessageHandler> transactionHandlers;
 
+    /**
+     * 广播消费处理器合集
+     * key：topic
+     * value：消息处理器
+     */
     private final Map<String, MessageHandler> broadcastHandlers;
 
+    /**
+     * 源生kafka消费者合集
+     */
     private final List<org.apache.kafka.clients.consumer.KafkaConsumer<String, byte[]>> consumerList = new ArrayList<>();
+
+    /**
+     * 拉取消息工作线程集合
+     */
     private final List<PollWorker> pollWorkerList = new ArrayList<>();
 
+    /**
+     * 异步线程组
+     */
     private final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
     public KafkaConsumer(KafkaProperties kafkaProperties, Map<String, MessageHandler> messageHandlers, Map<String, MessageHandler> transactionHandlers, Map<String, MessageHandler> broadcastHandlers) {
@@ -57,6 +85,10 @@ public class KafkaConsumer implements MessageConsumer {
         executor.initialize();
     }
 
+    /**
+     * 启动所有类型的消费组
+     * @throws Exception none
+     */
     @Override
     public void start() throws Exception {
         if (!messageHandlers.isEmpty()) {
@@ -70,12 +102,22 @@ public class KafkaConsumer implements MessageConsumer {
         }
     }
 
+    /**
+     * 关闭所有源生kafka消费者
+     * 停止所有拉取消息工作线程
+     * @throws Exception none
+     */
     @Override
     public void destroy() throws Exception {
         consumerList.forEach(org.apache.kafka.clients.consumer.KafkaConsumer::close);
         pollWorkerList.forEach(PollWorker::shutdown);
     }
 
+    /**
+     * 创建源生kafka消费者
+     * @param consumerType 消费组类型
+     * @return 源生kafka消费者
+     */
     private org.apache.kafka.clients.consumer.KafkaConsumer<String, byte[]> createConsumer(String consumerType) {
         Properties properties = kafkaProperties.getClientConfig();
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());

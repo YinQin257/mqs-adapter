@@ -17,20 +17,30 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
- * &#064;description:
- * &#064;author: YinQin
- * &#064;date: 2023-10-10 14:48
+ * @description kafka生产者
+ * @author  YinQin
+ * @createTime 2023-10-10 14:48
  */
 public class KafkaProducer implements MessageProducer {
 
+    /**
+     * 源生kafka消费者合集
+     */
     private org.apache.kafka.clients.producer.KafkaProducer<String, byte[]> kafkaProducer;
 
+    /**
+     * kafka配置类
+     */
     private final KafkaProperties kafkaProperties;
 
     public KafkaProducer(KafkaProperties kafkaProperties) {
         this.kafkaProperties = kafkaProperties;
     }
 
+    /**
+     * 启动生产者
+     * @throws Exception none
+     */
     @Override
     public void start() throws Exception {
         Properties properties = kafkaProperties.getClientConfig();
@@ -39,6 +49,11 @@ public class KafkaProducer implements MessageProducer {
         kafkaProducer = new org.apache.kafka.clients.producer.KafkaProducer<>(properties);
     }
 
+    /**
+     * 同步发送消息方法
+     * @param message 消息
+     * @return 消息处理结果
+     */
     @Override
     public MessageSendResult sendMessage(AdapterMessage message) {
         ProducerRecord<String, byte[]> producerRecord = new ProducerRecord<>(message.getTopic(), null, message.getBizKey(), message.getBody(), null);
@@ -54,6 +69,13 @@ public class KafkaProducer implements MessageProducer {
         return messageSendResult;
     }
 
+    /**
+     * 同步发送消息方法
+     * @param message 消息
+     * @param timeout 同步等待时间
+     * @param unit 时间单位
+     * @return 消息处理结果
+     */
     @Override
     public MessageSendResult sendMessage(AdapterMessage message, long timeout, TimeUnit unit) {
         ProducerRecord<String, byte[]> producerRecord = new ProducerRecord<>(message.getTopic(), null, message.getBizKey(), message.getBody(), null);
@@ -69,6 +91,11 @@ public class KafkaProducer implements MessageProducer {
         return messageSendResult;
     }
 
+    /**
+     * 异步发送消息方法
+     * @param message 消息
+     * @param callback 消息发送结果回调
+     */
     @Override
     public void sendMessage(AdapterMessage message, MessageCallback callback) {
         ProducerRecord<String, byte[]> producerRecord = new ProducerRecord<>(message.getTopic(), null, message.getBizKey(), message.getBody(), null);
@@ -82,6 +109,10 @@ public class KafkaProducer implements MessageProducer {
         });
     }
 
+    /**
+     * 注销kafka生产者
+     * @throws Exception none
+     */
     @Override
     public void destroy() throws Exception {
         kafkaProducer.close();

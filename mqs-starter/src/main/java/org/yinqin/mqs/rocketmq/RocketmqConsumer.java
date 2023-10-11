@@ -21,22 +21,43 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * &#064;description: rocketmq消费者实现
- * &#064;author: YinQin
- * &#064;date: 2023-09-28 14:24
+ * @description rocketmq消费者
+ * @author YinQin
+ * @createTime 2023-09-28 14:24
  */
 public class RocketmqConsumer implements MessageConsumer {
 
     private final Logger logger = LoggerFactory.getLogger(RocketmqProducer.class);
 
+    /**
+     * rocketmq配置类
+     */
     private final RocketmqProperties rocketmqProperties;
 
+    /**
+     * 批量消费处理器合集
+     * key：topic
+     * value：消息处理器
+     */
     private final Map<String, MessageHandler> messageHandlers;
 
+    /**
+     * 单条消费处理器合集
+     * key：topic
+     * value：消息处理器
+     */
     private final Map<String, MessageHandler> transactionHandlers;
 
+    /**
+     * 广播消费处理器合集
+     * key：topic
+     * value：消息处理器
+     */
     private final Map<String, MessageHandler> broadcastHandlers;
 
+    /**
+     * 源生rocketmq消费者合集
+     */
     private final List<DefaultMQPushConsumer> consumerList = new ArrayList<>();
 
     public RocketmqConsumer(RocketmqProperties rocketmqProperties, Map<String, MessageHandler> messageHandlers, Map<String, MessageHandler> transactionHandlers, Map<String, MessageHandler> broadcastHandlers) {
@@ -46,7 +67,12 @@ public class RocketmqConsumer implements MessageConsumer {
         this.broadcastHandlers = broadcastHandlers;
     }
 
-
+    /**
+     * 创建源生rocketmq消费者
+     * @param consumerType 消费者类型
+     * @return 源生rocketmq消费者
+     * @throws MQClientException none
+     */
     private DefaultMQPushConsumer createConsumer(String consumerType) throws MQClientException {
         DefaultMQPushConsumer consumer;
         if (rocketmqProperties.getAcl().isEnabled()) {
@@ -83,6 +109,10 @@ public class RocketmqConsumer implements MessageConsumer {
         return consumer;
     }
 
+    /**
+     * 启动所有类型的消费组
+     * @throws Exception none
+     */
     @Override
     public void start() throws Exception {
         if (!messageHandlers.isEmpty()) {
@@ -99,6 +129,9 @@ public class RocketmqConsumer implements MessageConsumer {
         }
     }
 
+    /**
+     * 关闭所有源生rocketmq消费者
+     */
     @Override
     public void destroy() {
         consumerList.forEach(DefaultMQPushConsumer::shutdown);

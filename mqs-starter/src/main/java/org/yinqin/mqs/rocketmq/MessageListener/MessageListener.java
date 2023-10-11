@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * &#064;description:
- * &#064;author: YinQin
- * &#064;date: 2023-10-09 19:08
+ * @description 单条消息处理器
+ * @author YinQin
+ * @createTime 2023-10-09 19:08
  */
 public class MessageListener implements MessageListenerConcurrently {
 
