@@ -18,9 +18,9 @@ import java.util.Map;
  */
 public class MessageListener implements MessageListenerConcurrently {
 
-    private final Map<String, MessageHandler> transactionHandlers;
+    private final Map<String, MessageHandler> messageHandlers;
     public MessageListener(Map<String, MessageHandler> messageHandlers) {
-        this.transactionHandlers = messageHandlers;
+        this.messageHandlers = messageHandlers;
     }
 
     @Override
@@ -44,7 +44,7 @@ public class MessageListener implements MessageListenerConcurrently {
             messages.add(message);
         });
         try {
-            for (AdapterMessage msg : messages) transactionHandlers.get(firstMsg.getTopic()).process(msg);
+            for (AdapterMessage msg : messages) messageHandlers.get(firstMsg.getTopic()).process(msg);
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } catch (Exception e) {
             return ConsumeConcurrentlyStatus.RECONSUME_LATER;

@@ -103,22 +103,23 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
      */
     private void rocketmqConsumerStart(Map<String, MessageHandler> messageHandlerBeans, String vendorName, RocketmqProperties rocketmqProperties) {
         Map<String, MessageHandler> messageHandlers = new HashMap<>();
-        Map<String, MessageHandler> transactionHandlers = new HashMap<>();
+        Map<String, MessageHandler> batchMessageHandlers = new HashMap<>();
         Map<String, MessageHandler> broadcastHandlers = new HashMap<>();
         messageHandlerBeans.forEach((beanName, bean) -> {
             MessageAdapter messageAdapter = bean.getClass().getAnnotation(MessageAdapter.class);
             if (messageAdapter != null && messageAdapter.vendorName().equals(vendorName)) {
-                if (messageAdapter.isTransaction()) {
-                    transactionHandlers.put(messageAdapter.topicName(), bean);
+                if (messageAdapter.isBatch()) {
+                    batchMessageHandlers.put(messageAdapter.topicName(), bean);
                 } else if (messageAdapter.isBroadcast()) {
                     broadcastHandlers.put(messageAdapter.topicName(), bean);
                 } else {
                     messageHandlers.put(messageAdapter.topicName(), bean);
+
                 }
             }
         });
         try {
-            MessageConsumer consumer = new RocketmqConsumer(rocketmqProperties,messageHandlers, transactionHandlers, broadcastHandlers);
+            MessageConsumer consumer = new RocketmqConsumer(rocketmqProperties,batchMessageHandlers, messageHandlers, broadcastHandlers);
             consumer.start();
             consumerManager.put(vendorName, consumer);
         } catch (Exception e) {
@@ -134,13 +135,13 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
      */
     private void kafkaConsumerStart(Map<String, MessageHandler> messageHandlerBeans, String vendorName, KafkaProperties kafkaProperties) {
         Map<String, MessageHandler> messageHandlers = new HashMap<>();
-        Map<String, MessageHandler> transactionHandlers = new HashMap<>();
+        Map<String, MessageHandler> batchMessageHandlers = new HashMap<>();
         Map<String, MessageHandler> broadcastHandlers = new HashMap<>();
         messageHandlerBeans.forEach((beanName, bean) -> {
             MessageAdapter messageAdapter = bean.getClass().getAnnotation(MessageAdapter.class);
             if (messageAdapter != null && messageAdapter.vendorName().equals(vendorName)) {
-                if (messageAdapter.isTransaction()) {
-                    transactionHandlers.put(messageAdapter.topicName(), bean);
+                if (messageAdapter.isBatch()) {
+                    batchMessageHandlers.put(messageAdapter.topicName(), bean);
                 } else if (messageAdapter.isBroadcast()) {
                     broadcastHandlers.put(messageAdapter.topicName(), bean);
                 } else {
@@ -149,7 +150,7 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
             }
         });
         try {
-            MessageConsumer consumer = new KafkaConsumer(kafkaProperties, messageHandlers, transactionHandlers, broadcastHandlers);
+            MessageConsumer consumer = new KafkaConsumer(kafkaProperties, batchMessageHandlers, messageHandlers, broadcastHandlers);
             consumer.start();
             consumerManager.put(vendorName, consumer);
         } catch (Exception e) {

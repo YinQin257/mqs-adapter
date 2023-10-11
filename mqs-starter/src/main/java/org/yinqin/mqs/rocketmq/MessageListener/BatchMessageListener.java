@@ -25,10 +25,10 @@ public class BatchMessageListener implements MessageListenerConcurrently {
     /**
      * 消息处理器集合
      */
-    private final Map<String, MessageHandler> messageHandlers;
+    private final Map<String, MessageHandler> batchMessageHandlers;
 
-    public BatchMessageListener(Map<String, MessageHandler> messageHandlers) {
-        this.messageHandlers = messageHandlers;
+    public BatchMessageListener(Map<String, MessageHandler> batchMessageHandlers) {
+        this.batchMessageHandlers = batchMessageHandlers;
     }
 
     @Override
@@ -52,7 +52,7 @@ public class BatchMessageListener implements MessageListenerConcurrently {
             messages.add(message);
         });
         try {
-            messageHandlers.get(firstMsg.getTopic()).process(messages);
+            batchMessageHandlers.get(firstMsg.getTopic()).process(messages);
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } catch (Exception e) {
             return ConsumeConcurrentlyStatus.RECONSUME_LATER;

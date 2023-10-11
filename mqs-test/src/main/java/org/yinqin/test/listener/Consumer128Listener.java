@@ -17,7 +17,7 @@ import java.util.List;
  */
 
 @Component
-@MessageAdapter(vendorName = "rocketmq128",topicName = "MQS_TEST_TOPIC")
+@MessageAdapter(vendorName = "rocketmq128",topicName = "MQS_TEST_TOPIC", isBatch = true)
 public class Consumer128Listener implements MessageHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(Consumer128Listener.class);

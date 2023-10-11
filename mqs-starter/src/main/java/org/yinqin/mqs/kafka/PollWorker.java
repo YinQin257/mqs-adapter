@@ -7,10 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.yinqin.mqs.common.entity.AdapterMessage;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -34,22 +31,25 @@ public class PollWorker implements Runnable{
     /**
      * 消费类型
      */
-    private final String consumerType;
+    private String consumerType;
 
     /**
      * kafka源生消费者
      */
-    private final KafkaConsumer<String, byte[]> kafkaConsumer;
+    private KafkaConsumer<String, byte[]> kafkaConsumer;
 
     /**
      * 消息处理器集合
      */
-    private final Map<String, MessageHandler> messageHandlers;
+    private Map<String, MessageHandler> messageHandlers;
 
     public PollWorker(String consumerType, KafkaConsumer<String, byte[]> kafkaConsumer, Map<String, MessageHandler> messageHandlers) {
         this.consumerType = consumerType;
         this.kafkaConsumer = kafkaConsumer;
         this.messageHandlers = messageHandlers;
+    }
+
+    public PollWorker() {
     }
 
     @Override
@@ -67,7 +67,7 @@ public class PollWorker implements Runnable{
                     messages.forEach(this::consumeMessage);
                 }
             } catch (Exception e) {
-
+                logger.error("拉取消息异常：", e);
             }
         }
     }
@@ -112,6 +112,7 @@ public class PollWorker implements Runnable{
                 messageHandlers.get(topic).process(messageObjectList);
             }
         } catch (Exception e) {
+            logger.error("批量消费失败：", e);
         }
     }
 
@@ -124,7 +125,7 @@ public class PollWorker implements Runnable{
         try {
             messageHandler.process(message);
         } catch (Exception e) {
-
+            logger.error("单条消费失败：", e);
         }
     }
 }

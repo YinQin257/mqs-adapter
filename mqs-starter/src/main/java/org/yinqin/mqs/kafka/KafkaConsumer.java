@@ -33,14 +33,14 @@ public class KafkaConsumer implements MessageConsumer {
      * key：topic
      * value：消息处理器
      */
-    private final Map<String, MessageHandler> messageHandlers;
+    private final Map<String, MessageHandler> batchMessageHandlers;
 
     /**
      * 单条消费处理器合集
      * key：topic
      * value：消息处理器
      */
-    private final Map<String, MessageHandler> transactionHandlers;
+    private final Map<String, MessageHandler> messageHandlers;
 
     /**
      * 广播消费处理器合集
@@ -64,10 +64,10 @@ public class KafkaConsumer implements MessageConsumer {
      */
     private final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
-    public KafkaConsumer(KafkaProperties kafkaProperties, Map<String, MessageHandler> messageHandlers, Map<String, MessageHandler> transactionHandlers, Map<String, MessageHandler> broadcastHandlers) {
+    public KafkaConsumer(KafkaProperties kafkaProperties, Map<String, MessageHandler> batchMessageHandlers, Map<String, MessageHandler> transactionHandlers, Map<String, MessageHandler> broadcastHandlers) {
         this.kafkaProperties = kafkaProperties;
-        this.messageHandlers = messageHandlers;
-        this.transactionHandlers = transactionHandlers;
+        this.batchMessageHandlers = batchMessageHandlers;
+        this.messageHandlers = transactionHandlers;
         this.broadcastHandlers = broadcastHandlers;
         executor.setCorePoolSize(kafkaProperties.getPollTaskConfig().getCorePoolSize());
         // 设置最大线程数
@@ -91,10 +91,10 @@ public class KafkaConsumer implements MessageConsumer {
      */
     @Override
     public void start() throws Exception {
-        if (!messageHandlers.isEmpty()) {
+        if (!batchMessageHandlers.isEmpty()) {
             consumerList.add(createConsumer(Consts.BATCH));
         }
-        if (!transactionHandlers.isEmpty()) {
+        if (!messageHandlers.isEmpty()) {
             consumerList.add(createConsumer(Consts.TRAN));
         }
         if (!broadcastHandlers.isEmpty()) {
@@ -124,23 +124,28 @@ public class KafkaConsumer implements MessageConsumer {
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
         properties.put(ConsumerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString().replace("-", "").substring(0, 8));
         properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
-
+        Set<String> topicNames = new HashSet<>();
+        PollWorker pollWorker = new PollWorker();
+        org.apache.kafka.clients.consumer.KafkaConsumer<String, byte[]> kafkaConsumer;
         if (consumerType.equals(Consts.BATCH)) {
-            properties.setProperty("group.id", kafkaProperties.getGroupName());
-        }
-        if (consumerType.equals(Consts.TRAN)) {
+            properties.setProperty("group.id", kafkaProperties.getGroupName() + "_BATCH");
+            topicNames = batchMessageHandlers.keySet();
+            kafkaConsumer = new org.apache.kafka.clients.consumer.KafkaConsumer<>(properties);
+            pollWorker = new PollWorker(consumerType, kafkaConsumer, batchMessageHandlers);
+        } else if (consumerType.equals(Consts.TRAN)) {
             properties.setProperty("max.poll.records", "1");
-            properties.setProperty("group.id", kafkaProperties.getGroupName() + "_TRAN");
-        }
-        if (consumerType.equals(Consts.BROADCAST)) {
+            properties.setProperty("group.id", kafkaProperties.getGroupName());
+            topicNames = messageHandlers.keySet();
+            kafkaConsumer = new org.apache.kafka.clients.consumer.KafkaConsumer<>(properties);
+            pollWorker = new PollWorker(consumerType, kafkaConsumer, messageHandlers);
+        } else {
             properties.setProperty("max.poll.records", "1");
             properties.setProperty("group.id", kafkaProperties.getGroupName() + "_BROADCAST_" + properties.getProperty(ConsumerConfig.CLIENT_ID_CONFIG));
+            topicNames = broadcastHandlers.keySet();
+            kafkaConsumer = new org.apache.kafka.clients.consumer.KafkaConsumer<>(properties);
+            pollWorker = new PollWorker(consumerType, kafkaConsumer, broadcastHandlers);
         }
-
-        org.apache.kafka.clients.consumer.KafkaConsumer<String, byte[]> kafkaConsumer = new org.apache.kafka.clients.consumer.KafkaConsumer<>(properties);
-        Set<String> topicNames = messageHandlers.keySet();
         kafkaConsumer.subscribe(topicNames);
-        PollWorker pollWorker = new PollWorker(consumerType, kafkaConsumer, messageHandlers);
         executor.execute(pollWorker);
         pollWorkerList.add(pollWorker);
         return kafkaConsumer;

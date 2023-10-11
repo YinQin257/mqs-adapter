@@ -17,7 +17,7 @@ import java.util.List;
  */
 
 @Component
-@MessageAdapter(vendorName = "kafka33",topicName = "MQS_TEST_TOPIC")
+@MessageAdapter(vendorName = "kafka33",topicName = "MQS_TEST_TOPIC", isBatch = true)
 public class ConsumerListener implements MessageHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumerListener.class);

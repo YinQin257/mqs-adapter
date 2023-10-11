@@ -17,6 +17,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface MessageAdapter {
 
     /**
+     * topic名称
+     */
+    String topicName();
+
+    /**
      * 组件自定义名称
      */
     String vendorName();
@@ -24,18 +29,14 @@ public @interface MessageAdapter {
     /**
      * 是否为单条消息
      * 默认为批量消息
+     * 若为true，则不能广播消费
      */
-    boolean isTransaction() default false;
+    boolean isBatch() default false;
 
     /**
      * 是否为广播消息
      * 默认为集群消息消息
      */
     boolean isBroadcast() default false;
-
-    /**
-     * topic名称
-     */
-    String topicName();
 
 }

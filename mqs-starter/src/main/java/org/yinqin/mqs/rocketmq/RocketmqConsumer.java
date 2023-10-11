@@ -39,14 +39,14 @@ public class RocketmqConsumer implements MessageConsumer {
      * key：topic
      * value：消息处理器
      */
-    private final Map<String, MessageHandler> messageHandlers;
+    private final Map<String, MessageHandler> batchMessageHandlers;
 
     /**
      * 单条消费处理器合集
      * key：topic
      * value：消息处理器
      */
-    private final Map<String, MessageHandler> transactionHandlers;
+    private final Map<String, MessageHandler> messageHandlers;
 
     /**
      * 广播消费处理器合集
@@ -60,10 +60,10 @@ public class RocketmqConsumer implements MessageConsumer {
      */
     private final List<DefaultMQPushConsumer> consumerList = new ArrayList<>();
 
-    public RocketmqConsumer(RocketmqProperties rocketmqProperties, Map<String, MessageHandler> messageHandlers, Map<String, MessageHandler> transactionHandlers, Map<String, MessageHandler> broadcastHandlers) {
+    public RocketmqConsumer(RocketmqProperties rocketmqProperties, Map<String, MessageHandler> batchMessageHandlers, Map<String, MessageHandler> messageHandlers, Map<String, MessageHandler> broadcastHandlers) {
         this.rocketmqProperties = rocketmqProperties;
+        this.batchMessageHandlers = batchMessageHandlers;
         this.messageHandlers = messageHandlers;
-        this.transactionHandlers = transactionHandlers;
         this.broadcastHandlers = broadcastHandlers;
     }
 
@@ -88,10 +88,12 @@ public class RocketmqConsumer implements MessageConsumer {
         consumer.setConsumeThreadMin(rocketmqProperties.getConsumeThreadMin());
         consumer.setPullThresholdForQueue(rocketmqProperties.getPullThresholdForQueue());
         consumer.setConsumeConcurrentlyMaxSpan(rocketmqProperties.getConsumeConcurrentlyMaxSpan());
-        if (consumerType.equals(Consts.BATCH)) consumer.registerMessageListener(new BatchMessageListener(messageHandlers));
+        if (consumerType.equals(Consts.BATCH)) {
+            consumer.setConsumerGroup(rocketmqProperties.getGroupName()  + "_BATCH");
+            consumer.registerMessageListener(new BatchMessageListener(batchMessageHandlers));
+        }
         if (consumerType.equals(Consts.TRAN)){
-            consumer.registerMessageListener(new MessageListener(transactionHandlers));
-            consumer.setConsumerGroup(rocketmqProperties.getGroupName()  + "_TRAN");
+            consumer.registerMessageListener(new MessageListener(messageHandlers));
             consumer.setConsumeMessageBatchMaxSize(1);
         }
         if (consumerType.equals(Consts.BROADCAST)) {
@@ -100,7 +102,7 @@ public class RocketmqConsumer implements MessageConsumer {
             consumer.setConsumerGroup(rocketmqProperties.getGroupName() + "_BROADCAST");
             consumer.setMessageModel(MessageModel.BROADCASTING);
         }
-        for (String topic : messageHandlers.keySet()) {
+        for (String topic : batchMessageHandlers.keySet()) {
             logger.info("rocketmq{}消费组{}启动中，订阅Topic：{}", consumerType, rocketmqProperties.getGroupName(), topic);
             consumer.subscribe(topic, "*");
         }
@@ -116,11 +118,11 @@ public class RocketmqConsumer implements MessageConsumer {
     @Override
     public void start() throws Exception {
         if (!messageHandlers.isEmpty()) {
-            DefaultMQPushConsumer batch = createConsumer(Consts.BATCH);
+            DefaultMQPushConsumer batch = createConsumer(Consts.TRAN);
             consumerList.add(batch);
         }
-        if (!transactionHandlers.isEmpty()) {
-            DefaultMQPushConsumer batch = createConsumer(Consts.TRAN);
+        if (!batchMessageHandlers.isEmpty()) {
+            DefaultMQPushConsumer batch = createConsumer(Consts.BATCH);
             consumerList.add(batch);
         }
         if (!broadcastHandlers.isEmpty()) {
