@@ -19,20 +19,20 @@ import java.nio.charset.StandardCharsets;
 public class MqAdapterTestController {
     private static final Logger logger = LoggerFactory.getLogger(MqAdapterTestController.class);
 
-    @Autowired(required = false)
+    @Autowired
     ProducerManager producerManager;
 
     @GetMapping("/pubMessage")
-    public void pubMessage(@RequestParam String topic, @RequestParam Integer pubCount, @RequestParam String pubMode,@RequestParam String vendorName) {
+    public void pubMessage(@RequestParam String topic, @RequestParam Integer pubCount, @RequestParam String pubMode,@RequestParam String instanceId) {
         switch (pubMode) {
             case MessagePubMode.SYNC:
-                syncPubMessage(topic, pubCount,producerManager.get(vendorName));
+                syncPubMessage(topic, pubCount,producerManager.get(instanceId));
                 break;
             case MessagePubMode.ASYNC:
-                asyncPubMessage(topic, pubCount,producerManager.get(vendorName));
+                asyncPubMessage(topic, pubCount,producerManager.get(instanceId));
                 break;
             case MessagePubMode.ONE_WAY:
-                oneWayPubMessage(topic, pubCount,producerManager.get(vendorName));
+                oneWayPubMessage(topic, pubCount,producerManager.get(instanceId));
                 break;
             default:
                 logger.info("未支持的消息模式：{}", pubMode);

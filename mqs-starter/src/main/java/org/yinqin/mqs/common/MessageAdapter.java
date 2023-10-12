@@ -8,8 +8,8 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * @description 消息适配器消费者声明注解
  * @author YinQin
+ * @description 消息适配器消费者声明注解
  * @createTime 2023-09-28 11:44
  */
 @Retention(RUNTIME)
@@ -24,12 +24,10 @@ public @interface MessageAdapter {
     /**
      * 组件自定义名称
      */
-    String vendorName();
+    String instanceId();
 
     /**
-     * 是否为单条消息
-     * 默认为批量消息
-     * 若为true，则不能广播消费
+     * 是否为批量消息
      */
     boolean isBatch() default false;
 

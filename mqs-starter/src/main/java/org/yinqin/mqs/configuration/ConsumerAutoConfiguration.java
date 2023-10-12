@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
 import org.yinqin.mqs.common.MessageAdapter;
-import org.yinqin.mqs.common.config.MqsProperties.*;
 import org.yinqin.mqs.common.config.MqsProperties;
 import org.yinqin.mqs.common.handler.MessageHandler;
 import org.yinqin.mqs.common.manager.ConsumerManager;
@@ -27,8 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @description 消息适配器消费者自动装配类，在spring容器初始化成功后启动所有消费者
  * @author YinQin
+ * @description 消息适配器消费者自动装配类，在spring容器初始化成功后启动所有消费者
  * @createTime 2023-09-28 11:44
  */
 @Configuration
@@ -45,117 +44,83 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
 
     /**
      * 注销consumer
+     *
      * @throws Exception none
      */
     @Override
     public void destroy() throws Exception {
-        consumerManager.forEach((consumerType, consumer) -> {
+        for (Map.Entry<String, MessageConsumer> entry : consumerManager.entrySet()) {
+            String consumerType = entry.getKey();
+            MessageConsumer consumer = entry.getValue();
             try {
                 consumer.destroy();
             } catch (Exception e) {
-                logger.error("注销{}消费组失败：",consumerType,e);
+                logger.error("注销{}消费组失败：", consumerType, e);
             }
-        });
+        }
     }
 
     /**
      * 实现InitializingBean接口
      * 启动所有的消费组
+     *
      * @throws Exception none
      */
     @Override
     public void afterPropertiesSet() throws Exception {
         Map<String, MessageHandler> messageHandlerBeans = applicationContext.getBeansOfType(MessageHandler.class);
-        properties.getRocketmq().forEach((vendorName, rocketmqProperties) -> {
-            if (!rocketmqProperties.isProducerEnabled()) return;
-            if (StringUtils.isBlank(rocketmqProperties.getGroupName())) {
-                logger.error("消费者{}启动失败,groupName不能为空",vendorName);
+        properties.getAdapter().forEach((instanceId, config) -> {
+            if (!config.isConsumerEnabled()) return;
+            if (StringUtils.isBlank(config.getVendorName())) {
+                logger.error("生产者{}启动失败,vendorNam不能为空", instanceId);
                 return;
             }
-            if (StringUtils.isBlank(rocketmqProperties.getClientConfig().getNamesrvAddr())) {
-                logger.error("消费者{}启动失败，namesrvAddr不能为空",vendorName);
+            if (StringUtils.isBlank(config.getGroupName())) {
+                logger.error("消费者{}启动失败,groupName不能为空", instanceId);
                 return;
             }
-            rocketmqConsumerStart(messageHandlerBeans,vendorName,rocketmqProperties);
-
-        });
-
-        properties.getKafka().forEach((vendorName, kafkaProperties) -> {
-            if (!kafkaProperties.isProducerEnabled()) return;
-            if (StringUtils.isBlank(kafkaProperties.getGroupName())) {
-                logger.error("消费者{}启动失败,groupName不能为空",vendorName);
-                return;
-            }
-            if (StringUtils.isBlank(kafkaProperties.getClientConfig().getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG))) {
-                logger.error("消费者{}启动失败，bootstrap.servers不能为空",vendorName);
-                return;
-            }
-            kafkaConsumerStart(messageHandlerBeans,vendorName,kafkaProperties);
-
-        });
-    }
-
-    /**
-     * rocketmq消费组启动方法
-     * @param messageHandlerBeans 所有实现MessageHandler接口的bean
-     * @param vendorName 自定义组件名称
-     * @param rocketmqProperties rocketmq配置
-     */
-    private void rocketmqConsumerStart(Map<String, MessageHandler> messageHandlerBeans, String vendorName, RocketmqProperties rocketmqProperties) {
-        Map<String, MessageHandler> messageHandlers = new HashMap<>();
-        Map<String, MessageHandler> batchMessageHandlers = new HashMap<>();
-        Map<String, MessageHandler> broadcastHandlers = new HashMap<>();
-        messageHandlerBeans.forEach((beanName, bean) -> {
-            MessageAdapter messageAdapter = bean.getClass().getAnnotation(MessageAdapter.class);
-            if (messageAdapter != null && messageAdapter.vendorName().equals(vendorName)) {
-                if (messageAdapter.isBatch()) {
-                    batchMessageHandlers.put(messageAdapter.topicName(), bean);
-                } else if (messageAdapter.isBroadcast()) {
-                    broadcastHandlers.put(messageAdapter.topicName(), bean);
-                } else {
-                    messageHandlers.put(messageAdapter.topicName(), bean);
-
+            String vendorName = config.getVendorName();
+            Map<String, MessageHandler> messageHandlers = new HashMap<>();
+            Map<String, MessageHandler> batchMessageHandlers = new HashMap<>();
+            Map<String, MessageHandler> broadcastHandlers = new HashMap<>();
+            messageHandlerBeans.forEach((beanName, bean) -> {
+                MessageAdapter messageAdapter = bean.getClass().getAnnotation(MessageAdapter.class);
+                if (messageAdapter != null && messageAdapter.instanceId().equals(instanceId)) {
+                    if (messageAdapter.isBroadcast()) {
+                        broadcastHandlers.put(messageAdapter.topicName(), bean);
+                    } else if (messageAdapter.isBatch()) {
+                        batchMessageHandlers.put(messageAdapter.topicName(), bean);
+                    } else {
+                        messageHandlers.put(messageAdapter.topicName(), bean);
+                    }
                 }
-            }
-        });
-        try {
-            MessageConsumer consumer = new RocketmqConsumer(rocketmqProperties,batchMessageHandlers, messageHandlers, broadcastHandlers);
-            consumer.start();
-            consumerManager.put(vendorName, consumer);
-        } catch (Exception e) {
-            logger.error("消费者{}启动失败", vendorName, e);
-        }
-    }
-
-    /**
-     * kafka消费组启动方法
-     * @param messageHandlerBeans 所有实现MessageHandler接口的bean
-     * @param vendorName 自定义组件名称
-     * @param kafkaProperties kafka配置
-     */
-    private void kafkaConsumerStart(Map<String, MessageHandler> messageHandlerBeans, String vendorName, KafkaProperties kafkaProperties) {
-        Map<String, MessageHandler> messageHandlers = new HashMap<>();
-        Map<String, MessageHandler> batchMessageHandlers = new HashMap<>();
-        Map<String, MessageHandler> broadcastHandlers = new HashMap<>();
-        messageHandlerBeans.forEach((beanName, bean) -> {
-            MessageAdapter messageAdapter = bean.getClass().getAnnotation(MessageAdapter.class);
-            if (messageAdapter != null && messageAdapter.vendorName().equals(vendorName)) {
-                if (messageAdapter.isBatch()) {
-                    batchMessageHandlers.put(messageAdapter.topicName(), bean);
-                } else if (messageAdapter.isBroadcast()) {
-                    broadcastHandlers.put(messageAdapter.topicName(), bean);
-                } else {
-                    messageHandlers.put(messageAdapter.topicName(), bean);
+            });
+            MessageConsumer consumer = null;
+            if (config.getVendorName().equals("rocketmq")) {
+                if (StringUtils.isBlank(config.getRocketmq().getClientConfig().getNamesrvAddr())) {
+                    logger.error("消费者{}启动失败，namesrvAddr不能为空", vendorName);
+                    return;
                 }
+                consumer = new RocketmqConsumer(config, batchMessageHandlers, messageHandlers, broadcastHandlers);
+            } else if (config.getVendorName().equals("kafka")) {
+                if (StringUtils.isBlank(config.getKafka().getClientConfig().getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG))) {
+                    logger.error("消费者{}启动失败，bootstrap.servers不能为空", vendorName);
+                    return;
+                }
+                consumer = new KafkaConsumer(config, batchMessageHandlers, messageHandlers, broadcastHandlers);
+            } else {
+                logger.warn("厂商类型{}暂未支持", config.getVendorName());
             }
+            if (consumer == null) return;
+            try {
+                consumer.start();
+                consumerManager.put(vendorName, consumer);
+                logger.info("消费者{}启动成功", vendorName);
+            } catch (Exception e) {
+                logger.error("消费者{}启动失败", vendorName, e);
+            }
+
         });
-        try {
-            MessageConsumer consumer = new KafkaConsumer(kafkaProperties, batchMessageHandlers, messageHandlers, broadcastHandlers);
-            consumer.start();
-            consumerManager.put(vendorName, consumer);
-        } catch (Exception e) {
-            logger.error("消费者{}启动失败", vendorName, e);
-        }
     }
 
     @Override

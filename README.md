@@ -12,65 +12,187 @@
 
 ## 使用说明
 
+### 引入依赖
+
+```xml
+<dependency>
+    <groupId>org.yinqin</groupId>
+    <artifactId>mqs-starter</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
 ### 配置定义
 
 ```yaml
 mqs:
-  #组件类型
-  rocketmq:
-    #自定义名称（生产者 or 消费者名称）
-    rocketmq32:
-      # 消费组名称
-      group-name: MQS_TEST
-      # 批量消费数量
-      consume-message-batch-max-size: 20
-      # 消费最小线程
-      consume-thread-min: 10
-      # 消费最大线程
-      consume-thread-max: 15
-      # rocketmq原生配置
-      client-config:
-        namesrv-addr: 10.100.15.32:9876
-    #生产者名称
-    rocketmq128:
-      # 消费组名称
-      group-name: MQS_TEST
-      client-config:
-        namesrv-addr: 192.168.175.128:9876
-  #组件类型
-  kafka:
-    #生产者名称
-    kafka33:
-      group-name: MQS_TEST
-      client-config:
-        bootstrap.servers: 192.168.175.128:9092,192.168.175.128:19092,192.168.175.128:29092
+  adapter:
+    rocketmq128:  # 实例ID
+      group-name: MQS_TEST  # 消费组默认名称，必填项
+      vendor-name: rocketmq # 组件厂商名称，必填项
+      consumer-enabled: true # 消费者开关
+      producer-enabled: true # 生产者开关
+      rocketmq: #rocketmq专属配置
+        consume-message-batch-max-size: 20  # 批量消费上限，建议不超过32
+        consume-thread-min: 10  # 消费消息最小线程
+        consume-thread-max: 15  # 消费消息最大线程
+        client-config:  # rocketmq客户端源生配置，可自行参阅官网文档配置
+          namesrv-addr: 192.168.175.128:9876
+    #        acl: # 商业版rocketmq acl认证配置
+    #          enabled: true # acl开关
+    #          access-key:
+    #          secret-key:
+    kafka33:  # 实例ID
+      group-name: MQS_TEST  # 消费组默认名称，必填项
+      vendor-name: kafka  # 组件厂商名称，必填项
+      consumer-enabled: true  # 消费者开关
+      producer-enabled: true  # 生产者开关
+      kafka:  #kafka专属配置
+        client-config:  # kafka客户端源生配置，可自行参阅官网文档配置
+          bootstrap.servers: 192.168.175.128:9092,192.168.175.128:19092,192.168.175.128:29092 # kafka集群地址
+          max.poll.records: 20  #批量消费上限
 ```
 
 ### 生产者使用
 
 ```java
-@Autowired
-ProducerManager producerManager;
+@RestController
+public class MqAdapterTestController {
+    private static final Logger logger = LoggerFactory.getLogger(MqAdapterTestController.class);
 
-// 从生产者管理器中获取指定生产者
-MessageProducer producer = producerManager.get('rocketmq32');
-// 使用指定生产者发送消息
-producer.sendMessage(message);
+    @Autowired
+    ProducerManager producerManager;
+
+    @GetMapping("/pubMessage")
+    public void pubMessage(@RequestParam String topic, // topic
+                           @RequestParam Integer pubCount, 
+                           @RequestParam String pubMode, // 发送消息模式，同步、异步、单向
+                           @RequestParam String instanceId) { //实例ID
+        switch (pubMode) {
+            case MessagePubMode.SYNC:
+                syncPubMessage(topic, pubCount, producerManager.get(instanceId));
+                break;
+            case MessagePubMode.ASYNC:
+                asyncPubMessage(topic, pubCount, producerManager.get(instanceId));
+                break;
+            case MessagePubMode.ONE_WAY:
+                oneWayPubMessage(topic, pubCount, producerManager.get(instanceId));
+                break;
+            default:
+                logger.info("未支持的发送消息模式：{}", pubMode);
+                break;
+        }
+    }
+
+    private void oneWayPubMessage(String topic, Integer pubCount,MessageProducer producer) {
+        for (int i = 0; i < pubCount; i++){
+            AdapterMessage message = AdapterMessage.builder().topic(topic).body("This is a one way message".getBytes(StandardCharsets.UTF_8)).build();
+            producer.sendOneWay(message);
+        }
+    }
+
+    private void asyncPubMessage(String topic, Integer pubCount,MessageProducer producer) {
+        for (int i = 0; i < pubCount; i++) {
+            AdapterMessage message = AdapterMessage.builder().topic(topic).body("This is a async message".getBytes(StandardCharsets.UTF_8)).build();
+            producer.sendMessage(message, new MessageCallback() {
+                @Override
+                public void onSuccess() {
+                    logger.info("消息异步发送成功");
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    logger.info("消息异步发送失败,原因:" + throwable.getMessage());
+                }
+            });
+        }
+    }
+
+    private void syncPubMessage(String topic, Integer pubCount,MessageProducer producer) {
+        for (int i = 0; i < pubCount; i++) {
+            AdapterMessage message = AdapterMessage.builder().topic(topic).body("This is a sync message".getBytes(StandardCharsets.UTF_8)).build();
+            MessageSendResult send = producer.sendMessage(message);
+            if (send.getStatus() == Consts.SUCCESS) logger.info("消息同步发送成功");
+            else logger.info("消息同步发送失败,原因:" + send.getThrowable().getMessage());
+        }
+    }
+}
 ```
 
 ### 消费者使用
 
-使用@MessageAdapter注解，声明使用的组件自定义名称、topic。
+使用@MessageAdapter注解，声明使用的实例ID、topic。
 
 实现MessageHandler接口即可。
 
+#### 单条消费示例
 ```java
 @Component
-@MessageAdapter(vendorName = "kafka33",topicName = "MQS_TEST_TOPIC")
+@MessageAdapter(instanceId = "kafka33",topicName = "MQS_TEST_TOPIC")
 public class ConsumerListener implements MessageHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumerListener.class);
+    
+    @Override
+    public void process(AdapterMessage message) throws Exception {
+        logger.info("收到消息，TOPIC：{}，消息内容是：{}", message.getTopic(), new String(message.getBody(), StandardCharsets.UTF_8));
+    }
 
+    @Override
+    public void process(List<AdapterMessage> messages) throws Exception {
+
+    }
+}
+```
+
+#### 批量消费示例
+```java
+@Component
+@MessageAdapter(instanceId = "kafka33",topicName = "MQS_TEST_TOPIC_BATCH", isBatch = true)
+public class BatchConsumerListener implements MessageHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(BatchConsumerListener.class);
+    
+    @Override
+    public void process(AdapterMessage message) throws Exception {
+
+    }
+
+    @Override
+    public void process(List<AdapterMessage> messages) throws Exception {
+        logger.info("监听到批量消息，消息总数为：{}", messages.size());
+        messages.forEach(message -> {
+            logger.info("收到消息，TOPIC：{}，消息内容是：{}", message.getTopic(), new String(message.getBody(), StandardCharsets.UTF_8));
+        });
+    }
+}
+```
+#### 广播消费示例
+```java
+@Component
+@MessageAdapter(instanceId = "kafka33",topicName = "MQS_TEST_TOPIC_BROADCAST", isBroadcast = true)
+public class BroadcastConsumerListener implements MessageHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(BroadcastConsumerListener.class);
+
+    @Override
+    public void process(AdapterMessage message) throws Exception {
+        logger.info("收到消息，TOPIC：{}，消息内容是：{}", message.getTopic(), new String(message.getBody(), StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public void process(List<AdapterMessage> messages) throws Exception {
+
+    }
+}
+```
+#### 批量广播消费示例
+```java
+@Component
+@MessageAdapter(instanceId = "kafka33",topicName = "MQS_TEST_TOPIC_BATCH_BROADCAST", isBatch = true, isBroadcast = true)
+public class BatchBroadcastConsumerListener implements MessageHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(BatchBroadcastConsumerListener.class);
 
     @Override
     public void process(AdapterMessage message) throws Exception {
@@ -86,4 +208,10 @@ public class ConsumerListener implements MessageHandler {
     }
 }
 ```
-
+### 注意事项
+- rocketmq消费者使用push的方式实现，通过实现并发消费监听类MessageListenerConcurrently实现的消息监听
+- kafka消费者使用poll的方式实现，使用自定义线程池拉取消息，目前仅支持自动提交消费位点，后续看情况扩展
+- 目前支持设置批量消费和广播消费，因此每个消费实例下面都会存在批量消费组合广播消费组
+- 创建消费组时需要同时创建批量消费组和广播消费组，例如：MQS_TEST(消费组)，MQS_TEST_BATCH(批量消费组)、MQS_TEST_BROADCAST(广播消费组)
+- rocketmq的消费策略为CONSUME_FROM_LAST_OFFSET
+- kafka的消费策略为latest

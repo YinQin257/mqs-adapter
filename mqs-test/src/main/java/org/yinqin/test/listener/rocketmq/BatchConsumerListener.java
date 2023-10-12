@@ -1,11 +1,11 @@
-package org.yinqin.test.listener;
+package org.yinqin.test.listener.rocketmq;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.yinqin.mqs.common.MessageAdapter;
 import org.yinqin.mqs.common.entity.AdapterMessage;
 import org.yinqin.mqs.common.handler.MessageHandler;
-import org.yinqin.mqs.common.MessageAdapter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -17,10 +17,10 @@ import java.util.List;
  */
 
 @Component
-@MessageAdapter(vendorName = "rocketmq128",topicName = "MQS_TEST_TOPIC", isBatch = true)
-public class Consumer128Listener implements MessageHandler {
+@MessageAdapter(instanceId = "kafka33",topicName = "MQS_TEST_TOPIC_BATCH", isBatch = true)
+public class BatchConsumerListener implements MessageHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(Consumer128Listener.class);
+    private static final Logger logger = LoggerFactory.getLogger(BatchConsumerListener.class);
 
 
     @Override

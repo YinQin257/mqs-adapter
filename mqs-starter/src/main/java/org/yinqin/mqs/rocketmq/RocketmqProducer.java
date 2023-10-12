@@ -11,7 +11,7 @@ import org.apache.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yinqin.mqs.common.Consts;
-import org.yinqin.mqs.common.config.MqsProperties.RocketmqProperties;
+import org.yinqin.mqs.common.config.MqsProperties.AdapterProperties;
 import org.yinqin.mqs.common.entity.AdapterMessage;
 import org.yinqin.mqs.common.entity.MessageCallback;
 import org.yinqin.mqs.common.entity.MessageSendResult;
@@ -21,8 +21,8 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @description rocketmq生产者
  * @author YinQin
+ * @description rocketmq生产者
  * @createTime 2023-09-28 14:25
  */
 public class RocketmqProducer implements MessageProducer {
@@ -32,30 +32,31 @@ public class RocketmqProducer implements MessageProducer {
     /**
      * rocketmq配置类
      */
-    private final RocketmqProperties rocketmqProperties;
+    private final AdapterProperties rocketmqProperties;
 
     /**
      * 源生rocketmq生产者
      */
     private DefaultMQProducer producer;
 
-    public RocketmqProducer (RocketmqProperties rocketmqProperties) {
+    public RocketmqProducer(AdapterProperties rocketmqProperties) {
         this.rocketmqProperties = rocketmqProperties;
     }
 
     /**
      * 启动rocketmq生产者
+     *
      * @throws Exception none
      */
     @Override
     public void start() throws Exception {
         logger.debug("rocketmq生产者启动中，启动配置：{}", rocketmqProperties.toString());
-        if (rocketmqProperties.getAcl().isEnabled()) {
-            producer = new DefaultMQProducer(rocketmqProperties.getGroupName(),new AclClientRPCHook(rocketmqProperties.getAcl()));
+        if (rocketmqProperties.getRocketmq().getAcl().isEnabled()) {
+            producer = new DefaultMQProducer(rocketmqProperties.getGroupName(), new AclClientRPCHook(rocketmqProperties.getRocketmq().getAcl()));
         } else {
             producer = new DefaultMQProducer(rocketmqProperties.getGroupName());
         }
-        producer.resetClientConfig(rocketmqProperties.getClientConfig());
+        producer.resetClientConfig(rocketmqProperties.getRocketmq().getClientConfig());
         producer.setInstanceName(UUID.randomUUID().toString().replace("-", "").substring(0, 8));
         producer.setAccessChannel(AccessChannel.CLOUD);
         producer.start();
@@ -63,6 +64,7 @@ public class RocketmqProducer implements MessageProducer {
 
     /**
      * 同步发送消息方法
+     *
      * @param adapterMessage 消息
      * @return 消息处理结果
      */
@@ -83,16 +85,17 @@ public class RocketmqProducer implements MessageProducer {
         } catch (Exception e) {
             messageSendResult.setStatus(Consts.ERROR);
             messageSendResult.setThrowable(e);
-            logger.error("同步消息发送失败，失败原因：",e);
+            logger.error("同步消息发送失败，失败原因：", e);
         }
         return messageSendResult;
     }
 
     /**
      * 同步发送消息方法
+     *
      * @param adapterMessage 消息
-     * @param timeout 同步等待时间
-     * @param unit 时间单位
+     * @param timeout        同步等待时间
+     * @param unit           时间单位
      * @return 消息处理结果
      */
     @Override
@@ -111,15 +114,16 @@ public class RocketmqProducer implements MessageProducer {
         } catch (Exception e) {
             messageSendResult.setStatus(Consts.ERROR);
             messageSendResult.setThrowable(e);
-            logger.error("同步消息发送失败，失败原因：",e);
+            logger.error("同步消息发送失败，失败原因：", e);
         }
         return messageSendResult;
     }
 
     /**
      * 异步发送消息方法
+     *
      * @param adapterMessage 消息
-     * @param callback 消息发送结果回调
+     * @param callback       消息发送结果回调
      */
     @Override
     public void sendMessage(AdapterMessage adapterMessage, MessageCallback callback) {
@@ -138,7 +142,7 @@ public class RocketmqProducer implements MessageProducer {
                 }
             });
         } catch (Exception e) {
-            logger.error("异步消息发送失败，失败原因：",e);
+            logger.error("异步消息发送失败，失败原因：", e);
         }
     }
 
@@ -152,6 +156,7 @@ public class RocketmqProducer implements MessageProducer {
 
     /**
      * 适配器消息转源生消息
+     *
      * @param message 适配器消息
      * @return rocketmq源生消息
      */

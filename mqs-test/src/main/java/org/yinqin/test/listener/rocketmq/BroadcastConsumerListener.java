@@ -1,4 +1,4 @@
-package org.yinqin.test.listener;
+package org.yinqin.test.listener.rocketmq;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,22 +17,18 @@ import java.util.List;
  */
 
 @Component
-@MessageAdapter(vendorName = "kafka33",topicName = "MQS_TEST_TOPIC", isBatch = true)
-public class ConsumerListener implements MessageHandler {
+@MessageAdapter(instanceId = "kafka33",topicName = "MQS_TEST_TOPIC_BROADCAST", isBroadcast = true)
+public class BroadcastConsumerListener implements MessageHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConsumerListener.class);
-
+    private static final Logger logger = LoggerFactory.getLogger(BroadcastConsumerListener.class);
 
     @Override
     public void process(AdapterMessage message) throws Exception {
-
+        logger.info("收到消息，TOPIC：{}，消息内容是：{}", message.getTopic(), new String(message.getBody(), StandardCharsets.UTF_8));
     }
 
     @Override
     public void process(List<AdapterMessage> messages) throws Exception {
-        logger.info("监听到批量消息，消息总数为：{}", messages.size());
-        messages.forEach(message -> {
-            logger.info("收到消息，TOPIC：{}，消息内容是：{}", message.getTopic(), new String(message.getBody(), StandardCharsets.UTF_8));
-        });
+
     }
 }

@@ -3,8 +3,8 @@ package org.yinqin.mqs.common.entity;
 import lombok.Data;
 
 /**
- * @description 消息发送结果
  * @author YinQin
+ * @description 消息发送结果
  * @createTime 2023-09-28 11:39
  */
 @Data
