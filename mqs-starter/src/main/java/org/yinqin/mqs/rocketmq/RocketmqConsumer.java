@@ -24,9 +24,13 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
+ * rocketmq消费者
+ *
  * @author YinQin
- * @description rocketmq消费者
- * @createTime 2023-09-28 14:24
+ * @version 1.0.3
+ * @createDate 2023年10月13日
+ * @see org.yinqin.mqs.common.service.MessageConsumer
+ * @since 1.0.0
  */
 public class RocketmqConsumer implements MessageConsumer {
 

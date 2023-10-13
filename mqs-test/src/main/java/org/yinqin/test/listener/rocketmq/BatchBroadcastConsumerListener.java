@@ -10,14 +10,8 @@ import org.yinqin.mqs.common.handler.MessageHandler;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-/**
- * @description
- * @author YinQin
- * @createTime 2023-10-10 10:44
- */
-
 @Component
-@MessageAdapter(instanceId = "kafka33",topicName = "MQS_TEST_TOPIC_BATCH_BROADCAST", isBatch = true, isBroadcast = true)
+@MessageAdapter(instanceId = "kafka33", topicName = "MQS_TEST_TOPIC_BATCH_BROADCAST", isBatch = true, isBroadcast = true)
 public class BatchBroadcastConsumerListener implements MessageHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(BatchBroadcastConsumerListener.class);

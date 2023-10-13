@@ -3,9 +3,12 @@ package org.yinqin.mqs.common.entity;
 import lombok.Data;
 
 /**
+ * 消息发送结果实体
+ *
  * @author YinQin
- * @description 消息发送结果
- * @createTime 2023-09-28 11:39
+ * @version 1.0.3
+ * @createDate 2023年10月13日
+ * @since 1.0.0
  */
 @Data
 public class MessageSendResult {

@@ -18,9 +18,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
+ * 拉取消息工作线程
+ *
  * @author YinQin
- * @description 拉取消息工作线程
- * @createTime 2023-10-10 16:04
+ * @version 1.0.3
+ * @createDate 2023年10月13日
+ * @see Runnable
+ * @since 1.0.0
  */
 public class PollWorker implements Runnable {
 

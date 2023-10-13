@@ -26,9 +26,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * 消息适配器消费者自动装配类
+ *
  * @author YinQin
- * @description 消息适配器消费者自动装配类，在spring容器初始化成功后启动所有消费者
- * @createTime 2023-09-28 11:44
+ * @version 1.0.3
+ * @createDate 2023年10月13日
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.beans.factory.DisposableBean
+ * @see org.springframework.context.ApplicationContextAware
+ * @see org.springframework.core.PriorityOrdered
+ * @since 1.0.0
  */
 @Configuration
 public class ConsumerAutoConfiguration implements InitializingBean, DisposableBean, ApplicationContextAware, PriorityOrdered {

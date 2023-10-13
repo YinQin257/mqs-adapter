@@ -3,9 +3,14 @@ package org.yinqin.mqs.common.entity;
 import lombok.*;
 
 /**
+ * 消息适配器抽象出来的消息实体
+ *
  * @author YinQin
- * @description 消息适配器抽象出来的消息实体
- * @createTime 2023-09-28 11:39
+ * @version 1.0.3
+ * @createDate 2023年10月13日
+ * @see org.apache.kafka.clients.consumer.ConsumerRecord
+ * @see org.apache.rocketmq.common.message.MessageExt
+ * @since 1.0.0
  */
 @Data
 @ToString

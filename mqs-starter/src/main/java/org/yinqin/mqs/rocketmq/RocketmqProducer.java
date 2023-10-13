@@ -21,9 +21,13 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * rocketmq生产者
+ *
  * @author YinQin
- * @description rocketmq生产者
- * @createTime 2023-09-28 14:25
+ * @version 1.0.3
+ * @createDate 2023年10月13日
+ * @see org.yinqin.mqs.common.service.MessageConsumer
+ * @since 1.0.0
  */
 public class RocketmqProducer implements MessageProducer {
 

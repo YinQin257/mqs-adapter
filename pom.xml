@@ -15,7 +15,7 @@
     <artifactId>mqs-adapter</artifactId>
     <name>mqs-adapter</name>
     <description>消息中间件适配器</description>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <packaging>pom</packaging>
     <url>https://github.com/YinQin257/mqs-adapter/</url>
     <modules>
@@ -120,8 +120,13 @@
                     <charset>UTF-8</charset>
                     <encoding>UTF-8</encoding>
                     <docencoding>UTF-8</docencoding>
-                    <!-- TODO 临时解决不规范的javadoc生成报错,后面要规范化后把这行去掉 -->
-                    <additionalparam>-Xdoclint:none</additionalparam>
+                    <tags>
+                        <tag>
+                            <name>createDate</name>
+                            <placement>t</placement>
+                            <head>创建日期</head>
+                        </tag>
+                    </tags>
                 </configuration>
                 <executions>
                     <execution>

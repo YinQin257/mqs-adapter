@@ -10,18 +10,11 @@ import org.yinqin.mqs.common.handler.MessageHandler;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-/**
- * @description
- * @author YinQin
- * @createTime 2023-10-10 10:44
- */
-
 @Component
-@MessageAdapter(instanceId = "kafka33",topicName = "MQS_TEST_TOPIC")
+@MessageAdapter(instanceId = "kafka33", topicName = "MQS_TEST_TOPIC")
 public class ConsumerListener implements MessageHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumerListener.class);
-
 
     @Override
     public void process(AdapterMessage message) throws Exception {

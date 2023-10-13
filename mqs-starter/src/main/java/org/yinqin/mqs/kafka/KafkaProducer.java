@@ -17,9 +17,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * kafka生产者
+ *
  * @author YinQin
- * @description kafka生产者
- * @createTime 2023-10-10 14:48
+ * @version 1.0.3
+ * @createDate 2023年10月13日
+ * @see org.yinqin.mqs.common.service.MessageProducer
+ * @since 1.0.0
  */
 public class KafkaProducer implements MessageProducer {
 

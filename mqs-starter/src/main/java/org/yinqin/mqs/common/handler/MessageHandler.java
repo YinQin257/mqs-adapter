@@ -5,9 +5,12 @@ import org.yinqin.mqs.common.entity.AdapterMessage;
 import java.util.List;
 
 /**
+ * 消费者消息处理顶级接口
+ *
  * @author YinQin
- * @description 消费者消息处理顶级接口
- * @createTime 2023-09-28 11:44
+ * @version 1.0.3
+ * @createDate 2023年10月13日
+ * @since 1.0.0
  */
 public interface MessageHandler {
 

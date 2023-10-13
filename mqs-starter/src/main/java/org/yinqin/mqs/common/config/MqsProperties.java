@@ -1,6 +1,9 @@
 package org.yinqin.mqs.common.config;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.ClientConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,11 +13,13 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
+ * 消息中间件自动装配配置类
+ *
  * @author YinQin
- * @description 消息中间件自动装配配置类
- * @createTime 2023-09-28 14:29
+ * @version 1.0.3
+ * @createDate 2023年10月13日
+ * @since 1.0.0
  */
-
 @ConfigurationProperties(MqsProperties.PREFIX)
 @Data
 @ToString
@@ -32,6 +37,14 @@ public class MqsProperties {
      */
     private Map<String, AdapterProperties> adapter = new LinkedHashMap<>();
 
+    /**
+     * 消息中间件实例配置类
+     *
+     * @author YinQin
+     * @version 1.0.3
+     * @createDate 2023年10月13日
+     * @since 1.0.0
+     */
     @Data
     public static class AdapterProperties {
 
@@ -58,9 +71,12 @@ public class MqsProperties {
         private KafkaProperties kafka = new KafkaProperties();
 
         /**
+         * rocketmq配置类
+         *
          * @author YinQin
-         * @description rocketmq配置类
-         * @createTime 2023-09-28 14:29
+         * @version 1.0.3
+         * @createDate 2023年10月13日
+         * @since 1.0.0
          */
         @Data
         public static class RocketmqProperties {
@@ -100,13 +116,19 @@ public class MqsProperties {
 
             /**
              * rocketmq其他源生配置项，可自行参考官网配置
+             *
+             * @see ClientConfig
              */
             private ClientConfig clientConfig;
 
             /**
+             * acl访问控制类，继承SessionCredentials
+             *
              * @author YinQin
-             * @description acl访问控制，继承SessionCredentials
-             * @createTime 2023-09-28 14:29
+             * @version 1.0.3
+             * @createDate 2023年10月13日
+             * @see org.apache.rocketmq.acl.common.SessionCredentials
+             * @since 1.0.0
              */
             @Data
             public static class Acl extends SessionCredentials {
@@ -119,27 +141,37 @@ public class MqsProperties {
         }
 
         /**
+         * kafka配置类
+         *
          * @author YinQin
-         * @description kafka配置类
-         * @createTime 2023-09-28 14:29
+         * @version 1.0.3
+         * @createDate 2023年10月13日
+         * @since 1.0.0
          */
         @Data
         public static class KafkaProperties {
 
             /**
              * kafka其他源生配置项，可自行参考官网配置
+             *
+             * @see org.apache.kafka.clients.consumer.ConsumerConfig
              */
             private Properties clientConfig;
 
             /**
              * 拉取消息线程池配置
+             *
+             * @see PollTaskConfig
              */
             private PollTaskConfig pollTaskConfig = new PollTaskConfig();
 
             /**
+             * 拉取消息线程池配置类
+             *
              * @author YinQin
-             * @description 拉取消息线程池配置类
-             * @createTime 2023-09-28 14:29
+             * @version 1.0.3
+             * @createDate 2023年10月13日
+             * @since 1.0.0
              */
             @Data
             public static class PollTaskConfig {

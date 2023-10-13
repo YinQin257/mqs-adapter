@@ -5,9 +5,13 @@ import org.yinqin.mqs.common.service.MessageProducer;
 import java.util.LinkedHashMap;
 
 /**
+ * 生产者管理器
+ *
  * @author YinQin
- * @description 生产者管理器
- * @createTime 2023-10-09 17:17
+ * @version 1.0.3
+ * @createDate 2023年10月13日
+ * @see java.util.LinkedHashMap
+ * @since 1.0.0
  */
 public class ProducerManager extends LinkedHashMap<String, MessageProducer> {
 

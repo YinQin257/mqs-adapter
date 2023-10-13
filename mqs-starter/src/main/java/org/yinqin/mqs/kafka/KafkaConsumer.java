@@ -15,9 +15,13 @@ import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
+ * kafka消费者
+ *
  * @author YinQin
- * @description kafka消费者
- * @createTime 2023-10-10 15:19
+ * @version 1.0.3
+ * @createDate 2023年10月13日
+ * @see org.yinqin.mqs.common.service.MessageConsumer
+ * @since 1.0.0
  */
 public class KafkaConsumer implements MessageConsumer {
 
@@ -122,7 +126,8 @@ public class KafkaConsumer implements MessageConsumer {
     /**
      * 创建源生kafka消费者
      *
-     * @param consumerType 消费组类型
+     * @param consumerType    消费组类型
+     * @param messageHandlers 消费处理器合集
      * @return 源生kafka消费者
      */
     private org.apache.kafka.clients.consumer.KafkaConsumer<String, byte[]> createConsumer(String consumerType, Map<String, MessageHandler> messageHandlers) {

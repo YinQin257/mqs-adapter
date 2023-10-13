@@ -15,9 +15,13 @@ import org.yinqin.mqs.kafka.KafkaProducer;
 import org.yinqin.mqs.rocketmq.RocketmqProducer;
 
 /**
+ * 消息适配器生产者自动装配类，将生产者管理器注入IOC容器，通过自定义组件名称获取对应的生产者
+ *
  * @author YinQin
- * @description 消息适配器生产者自动装配类，将生产者管理器注入IOC容器，通过自定义组件名称获取对应的生产者
- * @createTime 2023-09-28 11:44
+ * @version 1.0.3
+ * @createDate 2023年10月13日
+ * @see org.yinqin.mqs.common.config.MqsProperties
+ * @since 1.0.0
  */
 @Configuration
 @EnableConfigurationProperties({MqsProperties.class})
