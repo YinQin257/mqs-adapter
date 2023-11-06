@@ -215,3 +215,4 @@ public class BatchBroadcastConsumerListener implements MessageHandler {
 - 创建消费组时需要同时创建批量消费组和广播消费组，例如：MQS_TEST(消费组)，MQS_TEST_BATCH(批量消费组)、MQS_TEST_BROADCAST(广播消费组)
 - rocketmq的消费策略为CONSUME_FROM_LAST_OFFSET
 - kafka的消费策略为latest
+- 由于AMQP协议天生不支持批量消费，后续可能不会支持rabbitmq和activemq组件（最多支持单条消费）
