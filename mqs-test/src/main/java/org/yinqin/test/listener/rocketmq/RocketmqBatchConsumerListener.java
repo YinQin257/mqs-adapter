@@ -11,18 +11,21 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
-@MessageAdapter(instanceId = "kafka33", topicName = "MQS_TEST_TOPIC_BROADCAST", isBroadcast = true)
-public class BroadcastConsumerListener implements MessageHandler {
+@MessageAdapter(instanceId = "rocketmq128", topicName = "MQS_TEST_TOPIC_BATCH", isBatch = true)
+public class RocketmqBatchConsumerListener implements MessageHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(BroadcastConsumerListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(RocketmqBatchConsumerListener.class);
 
     @Override
     public void process(AdapterMessage message) throws Exception {
-        logger.info("收到消息，TOPIC：{}，消息内容是：{}", message.getTopic(), new String(message.getBody(), StandardCharsets.UTF_8));
+
     }
 
     @Override
     public void process(List<AdapterMessage> messages) throws Exception {
-
+        logger.info("监听到批量消息，消息总数为：{}", messages.size());
+        messages.forEach(message -> {
+            logger.info("收到消息，TOPIC：{}，消息内容是：{}", message.getTopic(), new String(message.getBody(), StandardCharsets.UTF_8));
+        });
     }
 }

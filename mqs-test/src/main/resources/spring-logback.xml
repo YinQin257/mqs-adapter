@@ -11,6 +11,7 @@
 	<logger name="org.apache.http.client.protocol" level="${logHeathLevel:-INFO}" />
 	<logger name="org.apache.http.impl.execchain" level="${logHeathLevel:-INFO}" />
 	<logger name="org.springframework.core.env" level="${logHeathLevel:-INFO}" />
+	<logger name="org.apache.kafka.clients" level="${logHeathLevel:-INFO}" />
 	<appender name="DEBUG_FILE"
 			  class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<!-- 日志记录器的滚动策略，按日期，按大小记录 （配置日志所生成的目录以及生成文件名的规则 在logs/mylog-2017-06-31.0.log.zip）-->

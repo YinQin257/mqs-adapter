@@ -1,4 +1,4 @@
-package org.yinqin.test.listener.rocketmq;
+package org.yinqin.test.listener.kafka;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,10 +11,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
-@MessageAdapter(instanceId = "kafka33", topicName = "MQS_TEST_TOPIC_BATCH_BROADCAST", isBatch = true, isBroadcast = true)
-public class BatchBroadcastConsumerListener implements MessageHandler {
+@MessageAdapter(instanceId = "kafka128", topicName = "MQS_TEST_TOPIC_BATCH_BROADCAST", isBatch = true, isBroadcast = true)
+public class KafkaBatchBroadcastConsumerListener implements MessageHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(BatchBroadcastConsumerListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(KafkaBatchBroadcastConsumerListener.class);
 
     @Override
     public void process(AdapterMessage message) throws Exception {

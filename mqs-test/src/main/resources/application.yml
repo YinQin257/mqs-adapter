@@ -15,17 +15,17 @@ mqs:
 #          enabled: true # acl开关
 #          access-key:
 #          secret-key:
-    kafka33:  # 实例ID
+    kafka128:  # 实例ID
       group-name: MQS_TEST  # 消费组默认名称，必填项
       vendor-name: kafka  # 组件厂商名称，必填项
       consumer-enabled: true  # 消费者开关
       producer-enabled: true  # 生产者开关
       kafka:  #kafka专属配置
         client-config:  # kafka客户端源生配置，可自行参阅官网文档配置
-          bootstrap.servers: 192.168.175.128:9092 # kafka集群地址
+          bootstrap.servers: 192.168.175.128:9092,192.168.175.128:19092,192.168.175.128:29092 # kafka集群地址
           max.poll.records: 20  #批量消费上限
 logging:
   config: classpath:spring-logback.xml
   level:
-    root: INFO
+    root: debug
     health: INFO
