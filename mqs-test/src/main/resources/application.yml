@@ -27,5 +27,5 @@ mqs:
 logging:
   config: classpath:spring-logback.xml
   level:
-    root: debug
+    root: info
     health: INFO
