@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * 拉取消息工作线程
  *
  * @author YinQin
- * @version 1.0.3
+ * @version 1.0.4
  * @createDate 2023年10月13日
  * @see Runnable
  * @since 1.0.0
@@ -38,36 +38,45 @@ public class PollWorker implements Runnable {
     /**
      * kafka源生消费者
      */
-    private KafkaConsumer<String, byte[]> kafkaConsumer;
+    private final KafkaConsumer<String, byte[]> kafkaConsumer;
 
     /**
      * 消息处理器集合
      */
-    private Map<String, MessageHandler> messageHandlers;
+    private final Map<String, MessageHandler> messageHandlers;
 
-    public PollWorker(KafkaConsumer<String, byte[]> kafkaConsumer, Map<String, MessageHandler> messageHandlers) {
+    /**
+     * 拉取消息间隔
+     */
+    private final int interval;
+
+    public PollWorker(KafkaConsumer<String, byte[]> kafkaConsumer, Map<String, MessageHandler> messageHandlers, int interval) {
         this.kafkaConsumer = kafkaConsumer;
         this.messageHandlers = messageHandlers;
-    }
-
-    public PollWorker() {
+        this.interval = interval;
     }
 
     @Override
     public void run() {
-        while (!closed.get()) {
-            try {
-                List<AdapterMessage> messages = fetchMessages();
-                if (messages.isEmpty()) {
-                    Thread.sleep(100);
-                    continue;
-                }
+        try {
+            while (!closed.get()) {
+                try {
+                    List<AdapterMessage> messages = fetchMessages();
+                    if (messages.isEmpty()) {
+                        Thread.sleep(interval);
+                        continue;
+                    }
 
-                consumeMessage(messages);
-            } catch (Exception e) {
-                logger.error("拉取消息异常：", e);
+                    consumeMessage(messages);
+                } catch (Exception e) {
+                    logger.error("拉取消息异常：", e);
+                }
             }
+        } finally {
+            // 关闭消费者,必须在当前线程关闭，否则会有线程安全问题
+            kafkaConsumer.close();
         }
+
     }
 
     public void shutdown() {

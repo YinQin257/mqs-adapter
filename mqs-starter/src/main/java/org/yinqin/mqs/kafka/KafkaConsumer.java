@@ -3,8 +3,6 @@ package org.yinqin.mqs.kafka;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.yinqin.mqs.common.Consts;
 import org.yinqin.mqs.common.config.MqsProperties.AdapterProperties;
@@ -18,14 +16,12 @@ import java.util.concurrent.ThreadPoolExecutor;
  * kafka消费者
  *
  * @author YinQin
- * @version 1.0.3
+ * @version 1.0.4
  * @createDate 2023年10月13日
  * @see org.yinqin.mqs.common.service.MessageConsumer
  * @since 1.0.0
  */
 public class KafkaConsumer implements MessageConsumer {
-
-    private final Logger logger = LoggerFactory.getLogger(KafkaConsumer.class);
 
     /**
      * kafka配置类
@@ -52,11 +48,6 @@ public class KafkaConsumer implements MessageConsumer {
      * value：消息处理器
      */
     private final Map<String, MessageHandler> broadcastHandlers;
-
-    /**
-     * 源生kafka消费者合集
-     */
-    private final List<org.apache.kafka.clients.consumer.KafkaConsumer<String, byte[]>> consumerList = new ArrayList<>();
 
     /**
      * 拉取消息工作线程集合
@@ -91,35 +82,28 @@ public class KafkaConsumer implements MessageConsumer {
 
     /**
      * 启动所有类型的消费组
-     *
-     * @throws Exception none
      */
     @Override
-    public void start() throws Exception {
+    public void start() {
         if (!messageHandlers.isEmpty()) {
-            consumerList.add(createConsumer(Consts.TRAN, messageHandlers));
+            createConsumer(Consts.TRAN, messageHandlers);
         }
         if (!batchMessageHandlers.isEmpty()) {
-            consumerList.add(createConsumer(Consts.BATCH, batchMessageHandlers));
+            createConsumer(Consts.BATCH, batchMessageHandlers);
         }
         if (!broadcastHandlers.isEmpty()) {
-            consumerList.add(createConsumer(Consts.BROADCAST, broadcastHandlers));
+            createConsumer(Consts.BROADCAST, broadcastHandlers);
         }
     }
 
     /**
      * 关闭所有源生kafka消费者
      * 停止所有拉取消息工作线程
-     *
-     * @throws Exception none
      */
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         for (PollWorker pollWorker : pollWorkerList) {
             pollWorker.shutdown();
-        }
-        for (org.apache.kafka.clients.consumer.KafkaConsumer<String, byte[]> stringKafkaConsumer : consumerList) {
-            stringKafkaConsumer.close();
         }
     }
 
@@ -128,12 +112,10 @@ public class KafkaConsumer implements MessageConsumer {
      *
      * @param consumerType    消费组类型
      * @param messageHandlers 消费处理器合集
-     * @return 源生kafka消费者
      */
-    private org.apache.kafka.clients.consumer.KafkaConsumer<String, byte[]> createConsumer(String consumerType, Map<String, MessageHandler> messageHandlers) {
+    private void createConsumer(String consumerType, Map<String, MessageHandler> messageHandlers) {
         Properties properties = new Properties();
         properties.putAll(kafkaProperties.getKafka().getClientConfig());
-
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
         properties.put(ConsumerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString().replace("-", "").substring(0, 8));
@@ -146,10 +128,9 @@ public class KafkaConsumer implements MessageConsumer {
         properties.setProperty("group.id", groupName);
         org.apache.kafka.clients.consumer.KafkaConsumer<String, byte[]> kafkaConsumer = new org.apache.kafka.clients.consumer.KafkaConsumer<>(properties);
         kafkaConsumer.subscribe(messageHandlers.keySet());
-        PollWorker pollWorker = new PollWorker(kafkaConsumer, messageHandlers);
+        PollWorker pollWorker = new PollWorker(kafkaConsumer, messageHandlers,kafkaProperties.getKafka().getInterval());
         executor.execute(pollWorker);
         pollWorkerList.add(pollWorker);
-        return kafkaConsumer;
     }
 
 }

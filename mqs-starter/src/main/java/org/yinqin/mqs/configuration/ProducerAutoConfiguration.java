@@ -9,6 +9,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.yinqin.mqs.common.config.MqsProperties;
+import org.yinqin.mqs.common.manager.ConsumerManager;
 import org.yinqin.mqs.common.manager.ProducerManager;
 import org.yinqin.mqs.common.service.MessageProducer;
 import org.yinqin.mqs.kafka.KafkaProducer;
@@ -18,14 +19,14 @@ import org.yinqin.mqs.rocketmq.RocketmqProducer;
  * 消息适配器生产者自动装配类，将生产者管理器注入IOC容器，通过自定义组件名称获取对应的生产者
  *
  * @author YinQin
- * @version 1.0.3
+ * @version 1.0.4
  * @createDate 2023年10月13日
  * @see org.yinqin.mqs.common.config.MqsProperties
  * @since 1.0.0
  */
 @Configuration
 @EnableConfigurationProperties({MqsProperties.class})
-public class ProducerAutoConfiguration {
+public abstract class ProducerAutoConfiguration extends ConsumerManager {
 
     private final Logger logger = LoggerFactory.getLogger(ProducerAutoConfiguration.class);
 
@@ -43,8 +44,7 @@ public class ProducerAutoConfiguration {
                 logger.error("生产者{}启动失败,groupName不能为空", instanceId);
                 return;
             }
-            String vendorName = config.getVendorName();
-            MessageProducer producer = null;
+            MessageProducer producer;
             if (config.getVendorName().equals("rocketmq")) {
                 if (StringUtils.isBlank(config.getRocketmq().getClientConfig().getNamesrvAddr())) {
                     logger.error("生产者{}启动失败，namesrvAddr不能为空", instanceId);

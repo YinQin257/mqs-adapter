@@ -16,6 +16,7 @@ import org.yinqin.mqs.common.entity.AdapterMessage;
 import org.yinqin.mqs.common.entity.MessageCallback;
 import org.yinqin.mqs.common.entity.MessageSendResult;
 import org.yinqin.mqs.common.service.MessageProducer;
+import org.yinqin.mqs.common.util.ConvertUtil;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * rocketmq生产者
  *
  * @author YinQin
- * @version 1.0.3
+ * @version 1.0.4
  * @createDate 2023年10月13日
  * @see org.yinqin.mqs.common.service.MessageConsumer
  * @since 1.0.0
@@ -74,7 +75,7 @@ public class RocketmqProducer implements MessageProducer {
      */
     @Override
     public MessageSendResult sendMessage(AdapterMessage adapterMessage) {
-        Message message = AdapterMessageToMessage(adapterMessage);
+        Message message = ConvertUtil.AdapterMessageToRocketmqMessage(adapterMessage,rocketmqProperties.getTopic());
 
         MessageSendResult messageSendResult = new MessageSendResult();
         try {
@@ -104,7 +105,7 @@ public class RocketmqProducer implements MessageProducer {
      */
     @Override
     public MessageSendResult sendMessage(AdapterMessage adapterMessage, long timeout, TimeUnit unit) {
-        Message message = AdapterMessageToMessage(adapterMessage);
+        Message message = ConvertUtil.AdapterMessageToRocketmqMessage(adapterMessage,rocketmqProperties.getTopic());
         MessageSendResult messageSendResult = new MessageSendResult();
         try {
             SendResult sendResult = producer.send(message, unit.toMillis(timeout));
@@ -131,7 +132,7 @@ public class RocketmqProducer implements MessageProducer {
      */
     @Override
     public void sendMessage(AdapterMessage adapterMessage, MessageCallback callback) {
-        Message message = AdapterMessageToMessage(adapterMessage);
+        Message message = ConvertUtil.AdapterMessageToRocketmqMessage(adapterMessage,rocketmqProperties.getTopic());
         try {
             producer.send(message, new SendCallback() {
                 @Override
@@ -158,13 +159,4 @@ public class RocketmqProducer implements MessageProducer {
         producer.shutdown();
     }
 
-    /**
-     * 适配器消息转源生消息
-     *
-     * @param message 适配器消息
-     * @return rocketmq源生消息
-     */
-    public Message AdapterMessageToMessage(AdapterMessage message) {
-        return new Message(message.getTopic(), message.getTag(), message.getBizKey(), message.getBody());
-    }
 }

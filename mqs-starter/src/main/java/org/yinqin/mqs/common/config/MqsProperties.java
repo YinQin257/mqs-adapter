@@ -1,9 +1,6 @@
 package org.yinqin.mqs.common.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.ClientConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -16,7 +13,7 @@ import java.util.Properties;
  * 消息中间件自动装配配置类
  *
  * @author YinQin
- * @version 1.0.3
+ * @version 1.0.4
  * @createDate 2023年10月13日
  * @since 1.0.0
  */
@@ -48,6 +45,9 @@ public class MqsProperties {
     @Data
     public static class AdapterProperties {
 
+        /**
+         * 消息中间件厂商名称
+         */
         private String vendorName;
 
         /**
@@ -66,9 +66,67 @@ public class MqsProperties {
          */
         private boolean producerEnabled = false;
 
+        /**
+         * 消费组配置类
+         */
+        private ConvertProperties group = new ConvertProperties();
+
+        /**
+         * topic配置类
+         */
+        private ConvertProperties topic = new ConvertProperties();
+
+        /**
+         * rocketmq配置类
+         */
         private RocketmqProperties rocketmq = new RocketmqProperties();
 
+        /**
+         * kafka配置类
+         */
         private KafkaProperties kafka = new KafkaProperties();
+
+        /**
+         * 转换配置类
+         *
+         * @author YinQin
+         * @version 1.0.4
+         * @createDate 2023年11月20日
+         * @since 1.0.0
+         */
+        @Data
+        public static class ConvertProperties {
+
+            /**
+             * 前缀
+             */
+            private String prefix;
+
+            /**
+             * 后缀
+             */
+            private String suffix;
+
+            /**
+             * 是否小写转大写
+             */
+            private boolean isLowerToUpper = false;
+
+            /**
+             * 是否大写转小写
+             */
+            private boolean isUpperToLower = false;
+
+            /**
+             * 是否下划线转中划线
+             */
+            private boolean isUnderScoreToHyphen = false;
+
+            /**
+             * 是否中划线转下划线
+             */
+            private boolean isHyphenToUnderScore = false;
+        }
 
         /**
          * rocketmq配置类
@@ -130,6 +188,7 @@ public class MqsProperties {
              * @see org.apache.rocketmq.acl.common.SessionCredentials
              * @since 1.0.0
              */
+            @EqualsAndHashCode(callSuper = true)
             @Data
             public static class Acl extends SessionCredentials {
 
@@ -164,6 +223,11 @@ public class MqsProperties {
              * @see PollTaskConfig
              */
             private PollTaskConfig pollTaskConfig = new PollTaskConfig();
+
+            /**
+             * 拉取消息间隔时间，单位：毫秒
+             */
+            private int interval = 100;
 
             /**
              * 拉取消息线程池配置类

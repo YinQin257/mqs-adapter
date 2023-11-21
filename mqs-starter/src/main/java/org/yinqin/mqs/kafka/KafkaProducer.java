@@ -11,6 +11,7 @@ import org.yinqin.mqs.common.entity.AdapterMessage;
 import org.yinqin.mqs.common.entity.MessageCallback;
 import org.yinqin.mqs.common.entity.MessageSendResult;
 import org.yinqin.mqs.common.service.MessageProducer;
+import org.yinqin.mqs.common.util.ConvertUtil;
 
 import java.util.Properties;
 import java.util.concurrent.Future;
@@ -20,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  * kafka生产者
  *
  * @author YinQin
- * @version 1.0.3
+ * @version 1.0.4
  * @createDate 2023年10月13日
  * @see org.yinqin.mqs.common.service.MessageProducer
  * @since 1.0.0
@@ -44,10 +45,9 @@ public class KafkaProducer implements MessageProducer {
     /**
      * 启动生产者
      *
-     * @throws Exception none
      */
     @Override
-    public void start() throws Exception {
+    public void start() {
         Properties properties = kafkaProperties.getKafka().getClientConfig();
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
@@ -62,7 +62,7 @@ public class KafkaProducer implements MessageProducer {
      */
     @Override
     public MessageSendResult sendMessage(AdapterMessage message) {
-        ProducerRecord<String, byte[]> producerRecord = new ProducerRecord<>(message.getTopic(), null, message.getBizKey(), message.getBody(), null);
+        ProducerRecord<String, byte[]> producerRecord = ConvertUtil.AdapterMessageToKafkaMessage(message,kafkaProperties.getTopic());
         MessageSendResult messageSendResult = new MessageSendResult();
         try {
             Future<RecordMetadata> future = kafkaProducer.send(producerRecord);
@@ -85,7 +85,7 @@ public class KafkaProducer implements MessageProducer {
      */
     @Override
     public MessageSendResult sendMessage(AdapterMessage message, long timeout, TimeUnit unit) {
-        ProducerRecord<String, byte[]> producerRecord = new ProducerRecord<>(message.getTopic(), null, message.getBizKey(), message.getBody(), null);
+        ProducerRecord<String, byte[]> producerRecord = ConvertUtil.AdapterMessageToKafkaMessage(message,kafkaProperties.getTopic());
         MessageSendResult messageSendResult = new MessageSendResult();
         try {
             Future<RecordMetadata> future = kafkaProducer.send(producerRecord);
@@ -106,7 +106,7 @@ public class KafkaProducer implements MessageProducer {
      */
     @Override
     public void sendMessage(AdapterMessage message, MessageCallback callback) {
-        ProducerRecord<String, byte[]> producerRecord = new ProducerRecord<>(message.getTopic(), null, message.getBizKey(), message.getBody(), null);
+        ProducerRecord<String, byte[]> producerRecord = ConvertUtil.AdapterMessageToKafkaMessage(message,kafkaProperties.getTopic());
         kafkaProducer.send(producerRecord, (recordMetadata, e) -> {
             if (e == null) {//成功发送
                 if (callback != null) callback.onSuccess();
@@ -120,10 +120,9 @@ public class KafkaProducer implements MessageProducer {
     /**
      * 注销kafka生产者
      *
-     * @throws Exception none
      */
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         kafkaProducer.close();
     }
 }

@@ -11,10 +11,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * 消息适配器消费者注解
  *
  * @author YinQin
- * @version 1.0.3
+ * @version 1.0.4
  * @createDate 2023年10月13日
  * @since 1.0.0
  */
+
 @Retention(RUNTIME)
 @Target(TYPE)
 public @interface MessageAdapter {
@@ -25,9 +26,9 @@ public @interface MessageAdapter {
     String topicName();
 
     /**
-     * @return 组件自定义名称
+     * @return 组件实例ID
      */
-    String instanceId();
+    String instanceId()  default "default";
 
     /**
      * @return 是否开启批量消费

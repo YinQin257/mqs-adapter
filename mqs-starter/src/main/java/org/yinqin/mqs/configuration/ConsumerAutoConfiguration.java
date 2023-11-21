@@ -1,6 +1,7 @@
 package org.yinqin.mqs.configuration;
 
 
+import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ import org.yinqin.mqs.common.config.MqsProperties;
 import org.yinqin.mqs.common.handler.MessageHandler;
 import org.yinqin.mqs.common.manager.ConsumerManager;
 import org.yinqin.mqs.common.service.MessageConsumer;
+import org.yinqin.mqs.common.util.ConvertUtil;
 import org.yinqin.mqs.kafka.KafkaConsumer;
 import org.yinqin.mqs.rocketmq.RocketmqConsumer;
 
@@ -29,7 +31,7 @@ import java.util.Map;
  * 消息适配器消费者自动装配类
  *
  * @author YinQin
- * @version 1.0.3
+ * @version 1.0.4
  * @createDate 2023年10月13日
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.beans.factory.DisposableBean
@@ -52,10 +54,9 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
     /**
      * 注销consumer
      *
-     * @throws Exception none
      */
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         for (Map.Entry<String, MessageConsumer> entry : consumerManager.entrySet()) {
             String consumerType = entry.getKey();
             MessageConsumer consumer = entry.getValue();
@@ -71,10 +72,9 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
      * 实现InitializingBean接口
      * 启动所有的消费组
      *
-     * @throws Exception none
      */
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         Map<String, MessageHandler> messageHandlerBeans = applicationContext.getBeansOfType(MessageHandler.class);
         properties.getAdapter().forEach((instanceId, config) -> {
             if (!config.isConsumerEnabled()) return;
@@ -93,12 +93,13 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
             messageHandlerBeans.forEach((beanName, bean) -> {
                 MessageAdapter messageAdapter = bean.getClass().getAnnotation(MessageAdapter.class);
                 if (messageAdapter != null && messageAdapter.instanceId().equals(instanceId)) {
+                    String topicName = ConvertUtil.convertName(messageAdapter.topicName(), config.getTopic());
                     if (messageAdapter.isBroadcast()) {
-                        broadcastHandlers.put(messageAdapter.topicName(), bean);
+                        broadcastHandlers.put(topicName, bean);
                     } else if (messageAdapter.isBatch()) {
-                        batchMessageHandlers.put(messageAdapter.topicName(), bean);
+                        batchMessageHandlers.put(topicName, bean);
                     } else {
-                        messageHandlers.put(messageAdapter.topicName(), bean);
+                        messageHandlers.put(topicName, bean);
                     }
                 }
             });
@@ -131,7 +132,7 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
