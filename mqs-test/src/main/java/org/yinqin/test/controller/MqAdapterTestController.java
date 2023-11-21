@@ -15,6 +15,14 @@ import org.yinqin.mqs.common.manager.ProducerManager;
 
 import java.nio.charset.StandardCharsets;
 
+/**
+ * 发送消息测试接口
+ *
+ * @author YinQin
+ * @version 1.0.4
+ * @createDate 2023年11月20日
+ * @since 1.0.0
+ */
 @RestController
 public class MqAdapterTestController {
     private static final Logger logger = LoggerFactory.getLogger(MqAdapterTestController.class);
@@ -22,6 +30,14 @@ public class MqAdapterTestController {
     @Autowired
     ProducerManager producerManager;
 
+    /**
+     * 发送消息
+     *
+     * @param topic    主题
+     * @param pubCount 发送消息数量
+     * @param pubMode  发送消息模式
+     * @param instanceId  消息中间件实例ID
+     */
     @GetMapping("/pubMessage")
     public void pubMessage(@RequestParam String topic, @RequestParam Integer pubCount, @RequestParam String pubMode,@RequestParam String instanceId) {
         switch (pubMode) {
@@ -40,6 +56,13 @@ public class MqAdapterTestController {
         }
     }
 
+    /**
+     * 发送单向消息
+     *
+     * @param topic    主题
+     * @param pubCount 发送消息数量
+     * @param producer 生产者
+     */
     private void oneWayPubMessage(String topic, Integer pubCount,MessageProducer producer) {
         for (int i = 0; i < pubCount; i++){
             AdapterMessage message = AdapterMessage.builder().topic(topic).body("This is a one way message".getBytes(StandardCharsets.UTF_8)).build();
@@ -47,6 +70,13 @@ public class MqAdapterTestController {
         }
     }
 
+    /**
+     * 发送异步消息
+     *
+     * @param topic    主题
+     * @param pubCount 发送消息数量
+     * @param producer 生产者
+     */
     private void asyncPubMessage(String topic, Integer pubCount,MessageProducer producer) {
         for (int i = 0; i < pubCount; i++) {
             AdapterMessage message = AdapterMessage.builder().topic(topic).body("This is a async message".getBytes(StandardCharsets.UTF_8)).build();
@@ -64,6 +94,13 @@ public class MqAdapterTestController {
         }
     }
 
+    /**
+     * 发送同步消息
+     *
+     * @param topic    主题
+     * @param pubCount 发送消息数量
+     * @param producer 生产者
+     */
     private void syncPubMessage(String topic, Integer pubCount,MessageProducer producer) {
         for (int i = 0; i < pubCount; i++) {
             AdapterMessage message = AdapterMessage.builder().topic(topic).body("This is a sync message".getBytes(StandardCharsets.UTF_8)).build();

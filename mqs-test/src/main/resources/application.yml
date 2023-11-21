@@ -3,8 +3,8 @@ mqs:
     rocketmq128:  # 实例ID
       group-name: MQS_TEST  # 消费组默认名称，必填项
       vendor-name: rocketmq # 组件厂商名称，必填项
-      consumer-enabled: true # 消费者开关
-      producer-enabled: true # 生产者开关
+      consumer-enabled: false # 消费者开关
+      producer-enabled: false # 生产者开关
       rocketmq: #rocketmq专属配置
         consume-message-batch-max-size: 20  # 批量消费上限，建议不超过32
         consume-thread-min: 10  # 消费消息最小线程
@@ -18,14 +18,40 @@ mqs:
     kafka128:  # 实例ID
       group-name: MQS_TEST  # 消费组默认名称，必填项
       vendor-name: kafka  # 组件厂商名称，必填项
-      consumer-enabled: true  # 消费者开关
-      producer-enabled: true  # 生产者开关
+      consumer-enabled: false  # 消费者开关
+      producer-enabled: false  # 生产者开关
       kafka:  #kafka专属配置
         client-config:  # kafka客户端源生配置，可自行参阅官网文档配置
           bootstrap.servers: 192.168.175.128:9092,192.168.175.128:19092,192.168.175.128:29092 # kafka集群地址
           max.poll.records: 20  #批量消费上限
+    default: # 实例ID，default为默认实例，MessageAdapter注解中可以不填写实例ID
+      group-name: MQS_TEST  # 消费组默认名称，必填项
+      vendor-name: kafka  # 组件厂商名称，必填项
+      consumer-enabled: true  # 消费者开关
+      producer-enabled: true  # 生产者开关
+      group: #消费组名称转换配置
+        prefix: gid-  # 消费组名称前缀
+        #suffix: -gid  # 消费组名称后缀
+        upper-to-lower: true # 大写转小写
+        under-score-to-hyphen: true # 下划线转中划线
+        #lower-to-upper: false # 小写转大写
+        #hyphen-to-under-score: false # 中划线转下划线
+      topic: #主题名称转换配置
+        prefix: tid-  # 主题名称前缀
+        #suffix: -tid  # 主题名称后缀
+        upper-to-lower: true # 大写转小写
+        under-score-to-hyphen: true # 下划线转中划线
+        #lower-to-upper: false # 小写转大写
+        #hyphen-to-under-score: false # 中划线转下划线
+      kafka: #kafka专属配置
+        client-config: # kafka客户端源生配置，可自行参阅官网文档配置
+          bootstrap.servers: 10.100.11.33:9092 # kafka集群地址
+          max.poll.records: 20  #批量消费上限
+          #security.protocol: SASL_PLAINTEXT  # 可以配置安全协议，实现sasl+acl认证
+          #sasl.mechanism: SCRAM-SHA-256
+          #sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="${spring.kafka.cluster-node[0].kafka-properties.properties.sasl.jaas.username}" password="${spring.kafka.cluster-node[0].kafka-properties.properties.sasl.jaas.pd}";
 logging:
   config: classpath:spring-logback.xml
   level:
-    root: info
+    root: INFO
     health: INFO

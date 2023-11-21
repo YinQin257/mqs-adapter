@@ -10,8 +10,16 @@ import org.yinqin.mqs.common.handler.MessageHandler;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+/**
+ * kafka批量集群消费监听器
+ *
+ * @author YinQin
+ * @version 1.0.4
+ * @createDate 2023年11月20日
+ * @since 1.0.3
+ */
 @Component
-@MessageAdapter(instanceId = "kafka128", topicName = "MQS_TEST_TOPIC_BATCH", isBatch = true)
+@MessageAdapter(topicName = "MQS_TEST_TOPIC_BATCH", isBatch = true)
 public class KafkaBatchConsumerListener implements MessageHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaBatchConsumerListener.class);

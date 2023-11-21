@@ -10,6 +10,14 @@ import org.yinqin.mqs.common.handler.MessageHandler;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+/**
+ * rocketmq单条广播消费监听器
+ *
+ * @author YinQin
+ * @version 1.0.4
+ * @createDate 2023年10月13日
+ * @since 1.0.0
+ */
 @Component
 @MessageAdapter(instanceId = "rocketmq128", topicName = "MQS_TEST_TOPIC_BROADCAST", isBroadcast = true)
 public class RocketmqBroadcastConsumerListener implements MessageHandler {
