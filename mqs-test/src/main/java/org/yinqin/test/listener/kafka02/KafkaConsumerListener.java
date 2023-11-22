@@ -1,4 +1,4 @@
-package org.yinqin.test.listener.rocketmq;
+package org.yinqin.test.listener.kafka02;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,18 +11,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
- * rocketmq单条集群消费监听器
+ * kafka单条集群消费监听器
  *
  * @author YinQin
- * @version 1.0.4
- * @createDate 2023年10月13日
- * @since 1.0.0
+ * @version 1.0.5
+ * @createDate 2023年11月20日
+ * @since 1.0.5
  */
-@Component
-@MessageAdapter(instanceId = "rocketmq128", topicName = "MQS_TEST_TOPIC")
-public class RocketmqConsumerListener implements MessageHandler {
+@Component("KafkaConsumerListener-kafka02")
+@MessageAdapter(instanceId ="kafka02", topicName = "MQS_TEST_TOPIC")
+public class KafkaConsumerListener implements MessageHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(RocketmqConsumerListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(KafkaConsumerListener.class);
 
     @Override
     public void process(AdapterMessage message) throws Exception {

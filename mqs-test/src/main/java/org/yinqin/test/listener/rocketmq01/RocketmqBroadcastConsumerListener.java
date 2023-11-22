@@ -1,4 +1,4 @@
-package org.yinqin.test.listener.rocketmq;
+package org.yinqin.test.listener.rocketmq01;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,12 +14,12 @@ import java.util.List;
  * rocketmq单条广播消费监听器
  *
  * @author YinQin
- * @version 1.0.4
+ * @version 1.0.5
  * @createDate 2023年10月13日
  * @since 1.0.0
  */
-@Component
-@MessageAdapter(instanceId = "rocketmq128", topicName = "MQS_TEST_TOPIC_BROADCAST", isBroadcast = true)
+@Component("RocketmqBroadcastConsumerListener-rocketmq01")
+@MessageAdapter(instanceId = "rocketmq01", topicName = "MQS_TEST_TOPIC_BROADCAST", isBroadcast = true)
 public class RocketmqBroadcastConsumerListener implements MessageHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(RocketmqBroadcastConsumerListener.class);

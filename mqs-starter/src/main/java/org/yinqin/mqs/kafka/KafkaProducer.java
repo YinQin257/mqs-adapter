@@ -5,6 +5,8 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yinqin.mqs.common.Consts;
 import org.yinqin.mqs.common.config.MqsProperties.AdapterProperties;
 import org.yinqin.mqs.common.entity.AdapterMessage;
@@ -21,12 +23,19 @@ import java.util.concurrent.TimeUnit;
  * kafka生产者
  *
  * @author YinQin
- * @version 1.0.4
+ * @version 1.0.5
  * @createDate 2023年10月13日
  * @see org.yinqin.mqs.common.service.MessageProducer
  * @since 1.0.0
  */
 public class KafkaProducer implements MessageProducer {
+
+    private final Logger logger = LoggerFactory.getLogger(KafkaProducer.class);
+
+    /**
+     * 实例ID
+     */
+    private final String instanceId;
 
     /**
      * 源生kafka消费者合集
@@ -38,20 +47,22 @@ public class KafkaProducer implements MessageProducer {
      */
     private final AdapterProperties kafkaProperties;
 
-    public KafkaProducer(AdapterProperties kafkaProperties) {
+    public KafkaProducer(String instanceId, AdapterProperties kafkaProperties) {
+        this.instanceId = instanceId;
         this.kafkaProperties = kafkaProperties;
     }
 
     /**
      * 启动生产者
-     *
      */
     @Override
     public void start() {
+        logger.info("实例：{} 生产者启动中，启动配置：{}", instanceId, kafkaProperties.toString());
         Properties properties = kafkaProperties.getKafka().getClientConfig();
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
         kafkaProducer = new org.apache.kafka.clients.producer.KafkaProducer<>(properties);
+        logger.info("实例：{} 生产者启动中成功", instanceId);
     }
 
     /**
@@ -62,7 +73,7 @@ public class KafkaProducer implements MessageProducer {
      */
     @Override
     public MessageSendResult sendMessage(AdapterMessage message) {
-        ProducerRecord<String, byte[]> producerRecord = ConvertUtil.AdapterMessageToKafkaMessage(message,kafkaProperties.getTopic());
+        ProducerRecord<String, byte[]> producerRecord = ConvertUtil.AdapterMessageToKafkaMessage(message, kafkaProperties.getTopic());
         MessageSendResult messageSendResult = new MessageSendResult();
         try {
             Future<RecordMetadata> future = kafkaProducer.send(producerRecord);
@@ -71,6 +82,7 @@ public class KafkaProducer implements MessageProducer {
         } catch (Exception e) {
             messageSendResult.setStatus(Consts.ERROR);
             messageSendResult.setThrowable(e);
+            logger.error("同步消息发送失败，失败原因：", e);
         }
         return messageSendResult;
     }
@@ -85,7 +97,7 @@ public class KafkaProducer implements MessageProducer {
      */
     @Override
     public MessageSendResult sendMessage(AdapterMessage message, long timeout, TimeUnit unit) {
-        ProducerRecord<String, byte[]> producerRecord = ConvertUtil.AdapterMessageToKafkaMessage(message,kafkaProperties.getTopic());
+        ProducerRecord<String, byte[]> producerRecord = ConvertUtil.AdapterMessageToKafkaMessage(message, kafkaProperties.getTopic());
         MessageSendResult messageSendResult = new MessageSendResult();
         try {
             Future<RecordMetadata> future = kafkaProducer.send(producerRecord);
@@ -94,6 +106,7 @@ public class KafkaProducer implements MessageProducer {
         } catch (Exception e) {
             messageSendResult.setStatus(Consts.ERROR);
             messageSendResult.setThrowable(e);
+            logger.error("同步消息发送失败，失败原因：", e);
         }
         return messageSendResult;
     }
@@ -106,23 +119,26 @@ public class KafkaProducer implements MessageProducer {
      */
     @Override
     public void sendMessage(AdapterMessage message, MessageCallback callback) {
-        ProducerRecord<String, byte[]> producerRecord = ConvertUtil.AdapterMessageToKafkaMessage(message,kafkaProperties.getTopic());
-        kafkaProducer.send(producerRecord, (recordMetadata, e) -> {
-            if (e == null) {//成功发送
-                if (callback != null) callback.onSuccess();
-            } else {
-                //发送失败
-                if (callback != null) callback.onError(e);
-            }
-        });
+        ProducerRecord<String, byte[]> producerRecord = ConvertUtil.AdapterMessageToKafkaMessage(message, kafkaProperties.getTopic());
+        try {
+            kafkaProducer.send(producerRecord, (recordMetadata, e) -> {
+                if (e == null) {
+                    if (callback != null) callback.onSuccess();
+                } else {
+                    if (callback != null) callback.onError(e);
+                }
+            });
+        } catch (Exception e) {
+            logger.error("异步消息发送失败，失败原因：", e);
+        }
     }
 
     /**
      * 注销kafka生产者
-     *
      */
     @Override
     public void destroy() {
         kafkaProducer.close();
+        logger.info("实例：{} 生产者停止成功", instanceId);
     }
 }

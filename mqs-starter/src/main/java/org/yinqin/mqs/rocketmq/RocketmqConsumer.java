@@ -17,6 +17,7 @@ import org.yinqin.mqs.common.config.MqsProperties.AdapterProperties;
 import org.yinqin.mqs.common.entity.AdapterMessage;
 import org.yinqin.mqs.common.handler.MessageHandler;
 import org.yinqin.mqs.common.service.MessageConsumer;
+import org.yinqin.mqs.common.util.ConvertUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,14 +28,19 @@ import java.util.UUID;
  * rocketmq消费者
  *
  * @author YinQin
- * @version 1.0.3
+ * @version 1.0.5
  * @createDate 2023年10月13日
  * @see org.yinqin.mqs.common.service.MessageConsumer
  * @since 1.0.0
  */
 public class RocketmqConsumer implements MessageConsumer {
 
-    private final Logger logger = LoggerFactory.getLogger(RocketmqProducer.class);
+    private final Logger logger = LoggerFactory.getLogger(RocketmqConsumer.class);
+
+    /**
+     * 实例ID
+     */
+    private final String instanceId;
 
     /**
      * rocketmq配置类
@@ -67,7 +73,8 @@ public class RocketmqConsumer implements MessageConsumer {
      */
     private final List<DefaultMQPushConsumer> consumerList = new ArrayList<>();
 
-    public RocketmqConsumer(AdapterProperties rocketmqProperties, Map<String, MessageHandler> batchMessageHandlers, Map<String, MessageHandler> messageHandlers, Map<String, MessageHandler> broadcastHandlers) {
+    public RocketmqConsumer(String instanceId, AdapterProperties rocketmqProperties, Map<String, MessageHandler> batchMessageHandlers, Map<String, MessageHandler> messageHandlers, Map<String, MessageHandler> broadcastHandlers) {
+        this.instanceId = instanceId;
         this.rocketmqProperties = rocketmqProperties;
         this.batchMessageHandlers = batchMessageHandlers;
         this.messageHandlers = messageHandlers;
@@ -82,11 +89,13 @@ public class RocketmqConsumer implements MessageConsumer {
      * @throws MQClientException none
      */
     private DefaultMQPushConsumer createConsumer(String consumerType, Map<String, MessageHandler> messageHandlers) throws MQClientException {
+        logger.info("实例：{}，消费方式：{}，消费者启动中， 启动配置：{}", instanceId, consumerType, rocketmqProperties.toString());
         DefaultMQPushConsumer consumer;
+        String groupName = rocketmqProperties.getGroupName();
         if (rocketmqProperties.getRocketmq().getAcl().isEnabled()) {
-            consumer = new DefaultMQPushConsumer(rocketmqProperties.getGroupName(), new AclClientRPCHook(rocketmqProperties.getRocketmq().getAcl()), new AllocateMessageQueueAveragely());
+            consumer = new DefaultMQPushConsumer(groupName, new AclClientRPCHook(rocketmqProperties.getRocketmq().getAcl()), new AllocateMessageQueueAveragely());
         } else {
-            consumer = new DefaultMQPushConsumer(rocketmqProperties.getGroupName());
+            consumer = new DefaultMQPushConsumer(groupName);
         }
         consumer.resetClientConfig(rocketmqProperties.getRocketmq().getClientConfig());
         consumer.setInstanceName(UUID.randomUUID().toString().replace("-", "").substring(0, 8));
@@ -96,16 +105,16 @@ public class RocketmqConsumer implements MessageConsumer {
         consumer.setConsumeThreadMin(rocketmqProperties.getRocketmq().getConsumeThreadMin());
         consumer.setPullThresholdForQueue(rocketmqProperties.getRocketmq().getPullThresholdForQueue());
         consumer.setConsumeConcurrentlyMaxSpan(rocketmqProperties.getRocketmq().getConsumeConcurrentlyMaxSpan());
-        String groupName = rocketmqProperties.getGroupName();
         if (consumerType.equals(Consts.TRAN)) consumer.setConsumeMessageBatchMaxSize(1);
         if (consumerType.equals(Consts.BATCH)) groupName += "_BATCH";
         if (consumerType.equals(Consts.BROADCAST)) {
             groupName += "_BROADCAST";
             consumer.setMessageModel(MessageModel.BROADCASTING);
         }
+        groupName = ConvertUtil.convertName(groupName, rocketmqProperties.getGroup());
         consumer.setConsumerGroup(groupName);
         for (String topic : messageHandlers.keySet()) {
-            logger.info("rocketmq{}消费组{}启动中，订阅Topic：{}", consumerType, rocketmqProperties.getGroupName(), topic);
+            logger.info("实例：{} 消费者启动中，消费组：{}，消费方式：{} 订阅Topic：{}", instanceId, groupName, consumerType, topic);
             consumer.subscribe(topic, "*");
         }
         consumer.registerMessageListener((MessageListenerConcurrently) (msgs, context) -> {
@@ -142,7 +151,7 @@ public class RocketmqConsumer implements MessageConsumer {
         });
 
         consumer.start();
-        logger.info("rocketmq{}消费组{}启动成功", consumerType, rocketmqProperties.getGroupName());
+        logger.info("实例：{}，消费方式：{} 消费者启动成功", instanceId, consumerType);
         return consumer;
     }
 
@@ -173,6 +182,7 @@ public class RocketmqConsumer implements MessageConsumer {
     @Override
     public void destroy() {
         consumerList.forEach(DefaultMQPushConsumer::shutdown);
+        logger.info("实例：{} 消费者停止成功", instanceId);
     }
 
 

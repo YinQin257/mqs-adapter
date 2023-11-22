@@ -31,7 +31,7 @@ import java.util.Map;
  * 消息适配器消费者自动装配类
  *
  * @author YinQin
- * @version 1.0.4
+ * @version 1.0.5
  * @createDate 2023年10月13日
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.beans.factory.DisposableBean
@@ -53,7 +53,6 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
 
     /**
      * 注销consumer
-     *
      */
     @Override
     public void destroy() {
@@ -71,7 +70,6 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
     /**
      * 实现InitializingBean接口
      * 启动所有的消费组
-     *
      */
     @Override
     public void afterPropertiesSet() {
@@ -79,14 +77,13 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
         properties.getAdapter().forEach((instanceId, config) -> {
             if (!config.isConsumerEnabled()) return;
             if (StringUtils.isBlank(config.getVendorName())) {
-                logger.error("生产者{}启动失败,vendorNam不能为空", instanceId);
+                logger.error("实例：{}，消费者启动失败,vendorNam不能为空", instanceId);
                 return;
             }
             if (StringUtils.isBlank(config.getGroupName())) {
-                logger.error("消费者{}启动失败,groupName不能为空", instanceId);
+                logger.error("实例：{}，消费者启动失败,groupName不能为空", instanceId);
                 return;
             }
-            String vendorName = config.getVendorName();
             Map<String, MessageHandler> messageHandlers = new HashMap<>();
             Map<String, MessageHandler> batchMessageHandlers = new HashMap<>();
             Map<String, MessageHandler> broadcastHandlers = new HashMap<>();
@@ -106,26 +103,25 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
             MessageConsumer consumer = null;
             if (config.getVendorName().equals("rocketmq")) {
                 if (StringUtils.isBlank(config.getRocketmq().getClientConfig().getNamesrvAddr())) {
-                    logger.error("消费者{}启动失败，namesrvAddr不能为空", vendorName);
+                    logger.error("实例：{}，消费者启动失败，namesrvAddr不能为空", instanceId);
                     return;
                 }
-                consumer = new RocketmqConsumer(config, batchMessageHandlers, messageHandlers, broadcastHandlers);
+                consumer = new RocketmqConsumer(instanceId, config, batchMessageHandlers, messageHandlers, broadcastHandlers);
             } else if (config.getVendorName().equals("kafka")) {
                 if (StringUtils.isBlank(config.getKafka().getClientConfig().getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG))) {
-                    logger.error("消费者{}启动失败，bootstrap.servers不能为空", vendorName);
+                    logger.error("实例：{}，消费者启动失败，bootstrap.servers不能为空", instanceId);
                     return;
                 }
-                consumer = new KafkaConsumer(config, batchMessageHandlers, messageHandlers, broadcastHandlers);
+                consumer = new KafkaConsumer(instanceId, config, batchMessageHandlers, messageHandlers, broadcastHandlers);
             } else {
                 logger.warn("厂商类型{}暂未支持", config.getVendorName());
             }
             if (consumer == null) return;
             try {
                 consumer.start();
-                consumerManager.put(vendorName, consumer);
-                logger.info("消费者{}启动成功", vendorName);
+                consumerManager.put(instanceId, consumer);
             } catch (Exception e) {
-                logger.error("消费者{}启动失败", vendorName, e);
+                logger.error("实例：{}，消费者启动失败", instanceId, e);
             }
 
         });

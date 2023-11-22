@@ -3,11 +3,15 @@ package org.yinqin.mqs.kafka;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.yinqin.mqs.common.Consts;
 import org.yinqin.mqs.common.config.MqsProperties.AdapterProperties;
 import org.yinqin.mqs.common.handler.MessageHandler;
 import org.yinqin.mqs.common.service.MessageConsumer;
+import org.yinqin.mqs.common.util.ConvertUtil;
+import org.yinqin.mqs.rocketmq.RocketmqProducer;
 
 import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -16,12 +20,19 @@ import java.util.concurrent.ThreadPoolExecutor;
  * kafka消费者
  *
  * @author YinQin
- * @version 1.0.4
+ * @version 1.0.5
  * @createDate 2023年10月13日
  * @see org.yinqin.mqs.common.service.MessageConsumer
  * @since 1.0.0
  */
 public class KafkaConsumer implements MessageConsumer {
+
+    private final Logger logger = LoggerFactory.getLogger(KafkaConsumer.class);
+
+    /**
+     * 实例ID
+     */
+    private final String instanceId;
 
     /**
      * kafka配置类
@@ -59,7 +70,8 @@ public class KafkaConsumer implements MessageConsumer {
      */
     private final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
-    public KafkaConsumer(AdapterProperties kafkaProperties, Map<String, MessageHandler> batchMessageHandlers, Map<String, MessageHandler> transactionHandlers, Map<String, MessageHandler> broadcastHandlers) {
+    public KafkaConsumer(String instanceId, AdapterProperties kafkaProperties, Map<String, MessageHandler> batchMessageHandlers, Map<String, MessageHandler> transactionHandlers, Map<String, MessageHandler> broadcastHandlers) {
+        this.instanceId = instanceId;
         this.kafkaProperties = kafkaProperties;
         this.batchMessageHandlers = batchMessageHandlers;
         this.messageHandlers = transactionHandlers;
@@ -105,6 +117,7 @@ public class KafkaConsumer implements MessageConsumer {
         for (PollWorker pollWorker : pollWorkerList) {
             pollWorker.shutdown();
         }
+        logger.info("实例：{} 消费者停止成功", instanceId);
     }
 
     /**
@@ -114,6 +127,7 @@ public class KafkaConsumer implements MessageConsumer {
      * @param messageHandlers 消费处理器合集
      */
     private void createConsumer(String consumerType, Map<String, MessageHandler> messageHandlers) {
+        logger.info("实例：{}，消费方式：{}，消费者启动中， 启动配置：{}", instanceId, consumerType, kafkaProperties.toString());
         Properties properties = new Properties();
         properties.putAll(kafkaProperties.getKafka().getClientConfig());
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
@@ -125,12 +139,17 @@ public class KafkaConsumer implements MessageConsumer {
         if (consumerType.equals(Consts.TRAN)) properties.setProperty("max.poll.records", "1");
         if (consumerType.equals(Consts.BROADCAST))
             groupName += "_BROADCAST_" + properties.getProperty(ConsumerConfig.CLIENT_ID_CONFIG);
+        groupName = ConvertUtil.convertName(groupName, kafkaProperties.getGroup());
         properties.setProperty("group.id", groupName);
         org.apache.kafka.clients.consumer.KafkaConsumer<String, byte[]> kafkaConsumer = new org.apache.kafka.clients.consumer.KafkaConsumer<>(properties);
         kafkaConsumer.subscribe(messageHandlers.keySet());
-        PollWorker pollWorker = new PollWorker(kafkaConsumer, messageHandlers,kafkaProperties.getKafka().getInterval());
+        for (String topic : messageHandlers.keySet()) {
+            logger.info("实例：{} 消费者启动中，消费组：{}，消费方式：{} 订阅Topic：{}", instanceId, groupName, consumerType, topic);
+        }
+        PollWorker pollWorker = new PollWorker(kafkaConsumer, messageHandlers, kafkaProperties.getKafka().getInterval());
         executor.execute(pollWorker);
         pollWorkerList.add(pollWorker);
+        logger.info("实例：{}，消费方式：{} 消费者启动成功", instanceId, consumerType);
     }
 
 }

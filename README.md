@@ -9,8 +9,8 @@
 - 目前支持rocketmq和kafka两种消息中间件。
 - 支持多数据源
 - 支持多种消费模式，批量消费，单条消费，广播消费
-- 支持对消费组名称和topic名称做转换处理 --1.0.4新增
-- 支持默认实例（默认数据源，可以不配置示例ID）--1.0.4新增
+- 支持对消费组名称和topic名称做转换处理 --1.0.5新增
+- 支持默认实例（默认数据源，可以不配置示例ID）--1.0.5新增
 
 ## 使用说明
 
@@ -20,7 +20,7 @@
 <dependency>
     <groupId>org.yinqin</groupId>
     <artifactId>mqs-starter</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
 </dependency>
 ```
 
@@ -34,64 +34,72 @@ mqs:
     default: # 实例ID，default为默认实例，MessageAdapter注解中可以不填写实例ID
       group-name: MQS_TEST  # 消费组默认名称，必填项
       vendor-name: kafka  # 组件厂商名称，必填项
-      consumer-enabled: true  # 消费者开关，必填项
-      producer-enabled: true  # 生产者开关，必填项
-      group: #消费组名称转换配置，可选功能
-        prefix: gid-  # 消费组名称前缀，可选功能
-#        suffix: -gid  # 消费组名称后缀，可选功能
-        upper-to-lower: true # 大写转小写，可选功能
-        under-score-to-hyphen: true # 下划线转中划线，可选功能
-#        lower-to-upper: false # 小写转大写，可选功能
-#        hyphen-to-under-score: false # 中划线转下划线，可选功能
-      topic: #主题名称转换配置，可选功能
-        prefix: tid-  # 主题名称前缀，可选功能
-#        suffix: -tid  # 主题名称后缀，可选功能
-        upper-to-lower: true # 大写转小写，可选功能
-        under-score-to-hyphen: true # 下划线转中划线，可选功能
-#        lower-to-upper: false # 小写转大写，可选功能
-#        hyphen-to-under-score: false # 中划线转下划线，可选功能
+      consumer-enabled: true  # 消费者开关
+      producer-enabled: true  # 生产者开关
+      group: #消费组名称转换配置
+        prefix: GID-  # 消费组名称前缀
+#        suffix: -gid  # 消费组名称后缀
+        upper-to-lower: true # 大写转小写
+        under-score-to-hyphen: true # 下划线转中划线
+#        lower-to-upper: false # 小写转大写
+#        hyphen-to-under-score: false # 中划线转下划线
+      topic: #主题名称转换配置
+        prefix: TID-  # 主题名称前缀
+#        suffix: -tid  # 主题名称后缀
+        upper-to-lower: true # 大写转小写
+        under-score-to-hyphen: true # 下划线转中划线
+#        lower-to-upper: false # 小写转大写
+#        hyphen-to-under-score: false # 中划线转下划线
       kafka: #kafka专属配置
         client-config: # kafka客户端源生配置，可自行参阅官网文档配置
           bootstrap.servers: 10.100.11.33:9092 # kafka集群地址
           max.poll.records: 20  #批量消费上限
 #          security.protocol: SASL_PLAINTEXT  # 可以配置安全协议，实现sasl+acl认证，kafka原生配置，自行研究怎么配
 #          sasl.mechanism: SCRAM-SHA-256
-#          sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="${spring.kafka.cluster-node[0].kafka-properties.properties.sasl.jaas.username}" password="${spring.kafka.cluster-node[0].kafka-properties.properties.sasl.jaas.pd}";
-    rocketmqInstance01: # 实例ID
-      group-name: MQS_TEST_01  # 消费组默认名称，必填项
-      vendor-name: rocketmq # 组件厂商名称，必填项
-      consumer-enabled: true # 消费者开关，必填项
-      producer-enabled: true # 生产者开关，必填项
-      rocketmq: #rocketmq专属配置
-        consume-message-batch-max-size: 20  # 批量消费上限，建议不超过32
-        consume-thread-min: 10  # 消费消息最小线程
-        consume-thread-max: 15  # 消费消息最大线程
-        client-config: # rocketmq客户端源生配置，可自行参阅官网文档配置
-          namesrv-addr: 192.168.175.128:9876 #rocketmq集群地址
-#       acl:	#商业版rocketmq的acl配置
-#         enabled: true # 是否开启acl认证
-#         secret-key: XXXXXXXXXX
-#         access-key: XXXXXXXXXX
-    rocketmqInstance02: # 实例ID
-      group-name: MQS_TEST_02  # 消费组默认名称，必填项
-      vendor-name: rocketmq # 组件厂商名称，必填项
-      consumer-enabled: true # 消费者开关，必填项
-      producer-enabled: true # 生产者开关，必填项
-      rocketmq: #rocketmq专属配置
-        consume-message-batch-max-size: 20  # 批量消费上限，建议不超过32
-        consume-thread-min: 10  # 消费消息最小线程
-        consume-thread-max: 15  # 消费消息最大线程
-        client-config: # rocketmq客户端源生配置，可自行参阅官网文档配置
-          namesrv-addr: 192.168.175.128:9876 #rocketmq集群地址
-    kafkaInstance: # 实例ID
+#          sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="admin" password="admin-secret";
+    kafka02: # 实例ID
       group-name: MQS_TEST  # 消费组默认名称，必填项
       vendor-name: kafka  # 组件厂商名称，必填项
-      consumer-enabled: false  # 消费者开关，必填项
-      producer-enabled: false  # 生产者开关，必填项
+      consumer-enabled: true  # 消费者开关
+      producer-enabled: true  # 生产者开关
       kafka: #kafka专属配置
         client-config: # kafka客户端源生配置，可自行参阅官网文档配置
           bootstrap.servers: 192.168.175.128:9092,192.168.175.128:19092,192.168.175.128:29092 # kafka集群地址
           max.poll.records: 20  #批量消费上限
+    rocketmq01: # 实例ID
+      group-name: MQS_TEST_01  # 消费组默认名称，必填项
+      vendor-name: rocketmq # 组件厂商名称，必填项
+      consumer-enabled: true # 消费者开关
+      producer-enabled: true # 生产者开关
+      group: #消费组名称转换配置
+        prefix: GID-  # 消费组名称前缀
+        upper-to-lower: true # 大写转小写
+        under-score-to-hyphen: true # 下划线转中划线
+      topic: #主题名称转换配置
+        prefix: TID-  # 主题名称前缀
+        upper-to-lower: true # 大写转小写
+        under-score-to-hyphen: true # 下划线转中划线
+      rocketmq: #rocketmq专属配置
+        consume-message-batch-max-size: 20  # 批量消费上限，建议不超过32
+        consume-thread-min: 10  # 消费消息最小线程
+        consume-thread-max: 15  # 消费消息最大线程
+        client-config: # rocketmq客户端源生配置，可自行参阅官网文档配置
+          namesrv-addr: 192.168.175.128:9876 #rocketmq集群地址
+#        acl:
+#          enabled: true # 是否开启acl认证
+#          secret-key: XXXXXXXXXX
+#          access-key: XXXXXXXXXX
+    rocketmq02: # 实例ID
+      group-name: MQS_TEST_02  # 消费组默认名称，必填项
+      vendor-name: rocketmq # 组件厂商名称，必填项
+      consumer-enabled: true # 消费者开关
+      producer-enabled: true # 生产者开关
+      rocketmq: #rocketmq专属配置
+        consume-message-batch-max-size: 20  # 批量消费上限，建议不超过32
+        consume-thread-min: 10  # 消费消息最小线程
+        consume-thread-max: 15  # 消费消息最大线程
+        client-config: # rocketmq客户端源生配置，可自行参阅官网文档配置
+          namesrv-addr: 10.100.15.32:9876 #rocketmq集群地址
 ```
 
 ### 消息体说明
@@ -182,15 +190,13 @@ mqs:
 	producer.sendOneWay(message);
 ```
 
-
-
 ### 消费者使用
 
 使用@MessageAdapter注解，声明使用的实例ID、topic。
 
-实现MessageHandler接口即可。
+实现MessageHandler接口，**并将监听实现注入到Spring容器中**。
 
-> instanceId在1.0.4版本之后非必填项，默认为default实例。
+> **instanceId在1.0.4版本之后非必填项，默认为default实例。**
 
 #### 单条消费示例
 ```java
@@ -279,7 +285,7 @@ public class BatchBroadcastConsumerListener implements MessageHandler {
 - rocketmq消费者使用push的方式实现，通过实现并发消费监听类MessageListenerConcurrently实现的消息监听
 - kafka消费者使用poll的方式实现，使用自定义线程池拉取消息，目前仅支持自动提交消费位点，后续看情况扩展
 - 目前支持设置批量消费和广播消费，因此每个消费实例下面都会存在批量消费组合广播消费组
-- 创建消费组时需要同时创建批量消费组和广播消费组，例如：MQS_TEST(消费组)，MQS_TEST_BATCH(批量消费组)、MQS_TEST_BROADCAST(广播消费组)
+- **rocketmq的消费组需要创建（生产环境一般都会要求关闭自动创建）**，**创建消费组时需要同时创建批量消费组和广播消费组**，例如：MQS_TEST(消费组)，在创建消费组MQS_TEST时，如果该消费组下会有批量消费和广播消费的需求，那么此时需要另外再创建MQS_TEST_BATCH(批量消费组)、MQS_TEST_BROADCAST(广播消费组)两个消费组。
 - rocketmq的消费策略为CONSUME_FROM_LAST_OFFSET
 - kafka的消费策略为latest
 - 由于AMQP协议天生不支持批量消费，后续可能不会支持rabbitmq和activemq组件（最多支持单条消费）

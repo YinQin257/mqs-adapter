@@ -1,4 +1,4 @@
-package org.yinqin.test.listener.kafka;
+package org.yinqin.test.listener.kafka01;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,18 +11,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
- * kafka单条集群消费监听器
+ * kafka广播消费监听器
  *
  * @author YinQin
- * @version 1.0.4
+ * @version 1.0.5
  * @createDate 2023年11月20日
  * @since 1.0.3
  */
-@Component
-@MessageAdapter(topicName = "MQS_TEST_TOPIC")
-public class KafkaConsumerListener implements MessageHandler {
+@Component("KafkaBroadcastConsumerListener-default")
+@MessageAdapter(topicName = "MQS_TEST_TOPIC_BROADCAST", isBroadcast = true)
+public class KafkaBroadcastConsumerListener implements MessageHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(KafkaConsumerListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(KafkaBroadcastConsumerListener.class);
 
     @Override
     public void process(AdapterMessage message) throws Exception {

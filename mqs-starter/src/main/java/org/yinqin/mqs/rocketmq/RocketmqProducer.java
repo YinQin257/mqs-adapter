@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * rocketmq生产者
  *
  * @author YinQin
- * @version 1.0.4
+ * @version 1.0.5
  * @createDate 2023年10月13日
  * @see org.yinqin.mqs.common.service.MessageConsumer
  * @since 1.0.0
@@ -33,6 +33,11 @@ import java.util.concurrent.TimeUnit;
 public class RocketmqProducer implements MessageProducer {
 
     private final Logger logger = LoggerFactory.getLogger(RocketmqProducer.class);
+
+    /**
+     * 实例ID
+     */
+    private final String instanceId;
 
     /**
      * rocketmq配置类
@@ -44,7 +49,8 @@ public class RocketmqProducer implements MessageProducer {
      */
     private DefaultMQProducer producer;
 
-    public RocketmqProducer(AdapterProperties rocketmqProperties) {
+    public RocketmqProducer(String instanceId, AdapterProperties rocketmqProperties) {
+        this.instanceId = instanceId;
         this.rocketmqProperties = rocketmqProperties;
     }
 
@@ -55,16 +61,18 @@ public class RocketmqProducer implements MessageProducer {
      */
     @Override
     public void start() throws Exception {
-        logger.debug("rocketmq生产者启动中，启动配置：{}", rocketmqProperties.toString());
+        logger.info("实例：{} 生产者启动中，启动配置：{}", instanceId, rocketmqProperties.toString());
+        String groupName = ConvertUtil.convertName(rocketmqProperties.getGroupName(), rocketmqProperties.getGroup());
         if (rocketmqProperties.getRocketmq().getAcl().isEnabled()) {
-            producer = new DefaultMQProducer(rocketmqProperties.getGroupName(), new AclClientRPCHook(rocketmqProperties.getRocketmq().getAcl()));
+            producer = new DefaultMQProducer(groupName, new AclClientRPCHook(rocketmqProperties.getRocketmq().getAcl()));
         } else {
-            producer = new DefaultMQProducer(rocketmqProperties.getGroupName());
+            producer = new DefaultMQProducer(groupName);
         }
         producer.resetClientConfig(rocketmqProperties.getRocketmq().getClientConfig());
         producer.setInstanceName(UUID.randomUUID().toString().replace("-", "").substring(0, 8));
         producer.setAccessChannel(AccessChannel.CLOUD);
         producer.start();
+        logger.info("实例：{} 生产者启动成功", instanceId);
     }
 
     /**
@@ -75,7 +83,7 @@ public class RocketmqProducer implements MessageProducer {
      */
     @Override
     public MessageSendResult sendMessage(AdapterMessage adapterMessage) {
-        Message message = ConvertUtil.AdapterMessageToRocketmqMessage(adapterMessage,rocketmqProperties.getTopic());
+        Message message = ConvertUtil.AdapterMessageToRocketmqMessage(adapterMessage, rocketmqProperties.getTopic());
 
         MessageSendResult messageSendResult = new MessageSendResult();
         try {
@@ -105,7 +113,7 @@ public class RocketmqProducer implements MessageProducer {
      */
     @Override
     public MessageSendResult sendMessage(AdapterMessage adapterMessage, long timeout, TimeUnit unit) {
-        Message message = ConvertUtil.AdapterMessageToRocketmqMessage(adapterMessage,rocketmqProperties.getTopic());
+        Message message = ConvertUtil.AdapterMessageToRocketmqMessage(adapterMessage, rocketmqProperties.getTopic());
         MessageSendResult messageSendResult = new MessageSendResult();
         try {
             SendResult sendResult = producer.send(message, unit.toMillis(timeout));
@@ -132,7 +140,7 @@ public class RocketmqProducer implements MessageProducer {
      */
     @Override
     public void sendMessage(AdapterMessage adapterMessage, MessageCallback callback) {
-        Message message = ConvertUtil.AdapterMessageToRocketmqMessage(adapterMessage,rocketmqProperties.getTopic());
+        Message message = ConvertUtil.AdapterMessageToRocketmqMessage(adapterMessage, rocketmqProperties.getTopic());
         try {
             producer.send(message, new SendCallback() {
                 @Override
@@ -157,6 +165,7 @@ public class RocketmqProducer implements MessageProducer {
     @Override
     public void destroy() {
         producer.shutdown();
+        logger.info("实例：{} 生产者停止成功", instanceId);
     }
 
 }

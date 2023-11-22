@@ -15,7 +15,7 @@
     <artifactId>mqs-adapter</artifactId>
     <name>mqs-adapter</name>
     <description>消息中间件适配器</description>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
     <packaging>pom</packaging>
     <url>https://github.com/YinQin257/mqs-adapter/</url>
     <modules>
