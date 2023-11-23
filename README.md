@@ -10,7 +10,7 @@
 - 支持多数据源
 - 支持多种消费模式，批量消费，单条消费，广播消费
 - 支持对消费组名称和topic名称做转换处理 --1.0.5新增
-- 支持默认实例（默认数据源，可以不配置示例ID）--1.0.5新增
+- 支持默认实例（默认数据源，可以不配置实例ID）--1.0.5新增
 
 ## 使用说明
 
@@ -18,7 +18,7 @@
 
 ```xml
 <dependency>
-    <groupId>org.yinqin</groupId>
+    <groupId>com.hzwq.starter</groupId>
     <artifactId>mqs-starter</artifactId>
     <version>1.0.5</version>
 </dependency>
