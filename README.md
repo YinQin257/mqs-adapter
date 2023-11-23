@@ -18,7 +18,7 @@
 
 ```xml
 <dependency>
-    <groupId>com.hzwq.starter</groupId>
+    <groupId>io.github.yinqin257</groupId>
     <artifactId>mqs-starter</artifactId>
     <version>1.0.5</version>
 </dependency>
