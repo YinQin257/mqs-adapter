@@ -33,9 +33,9 @@ import java.util.UUID;
  * @see org.yinqin.mqs.common.service.MessageConsumer
  * @since 1.0.0
  */
-public class RocketmqConsumer implements MessageConsumer {
+public class CustomRocketmqConsumer implements MessageConsumer {
 
-    private final Logger logger = LoggerFactory.getLogger(RocketmqConsumer.class);
+    private final Logger logger = LoggerFactory.getLogger(CustomRocketmqConsumer.class);
 
     /**
      * 实例ID
@@ -73,7 +73,7 @@ public class RocketmqConsumer implements MessageConsumer {
      */
     private final List<DefaultMQPushConsumer> consumerList = new ArrayList<>();
 
-    public RocketmqConsumer(String instanceId, AdapterProperties rocketmqProperties, Map<String, MessageHandler> batchMessageHandlers, Map<String, MessageHandler> messageHandlers, Map<String, MessageHandler> broadcastHandlers) {
+    public CustomRocketmqConsumer(String instanceId, AdapterProperties rocketmqProperties, Map<String, MessageHandler> batchMessageHandlers, Map<String, MessageHandler> messageHandlers, Map<String, MessageHandler> broadcastHandlers) {
         this.instanceId = instanceId;
         this.rocketmqProperties = rocketmqProperties;
         this.batchMessageHandlers = batchMessageHandlers;

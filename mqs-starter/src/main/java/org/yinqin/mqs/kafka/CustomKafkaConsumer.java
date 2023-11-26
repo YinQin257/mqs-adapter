@@ -11,7 +11,6 @@ import org.yinqin.mqs.common.config.MqsProperties.AdapterProperties;
 import org.yinqin.mqs.common.handler.MessageHandler;
 import org.yinqin.mqs.common.service.MessageConsumer;
 import org.yinqin.mqs.common.util.ConvertUtil;
-import org.yinqin.mqs.rocketmq.RocketmqProducer;
 
 import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -25,9 +24,9 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @see org.yinqin.mqs.common.service.MessageConsumer
  * @since 1.0.0
  */
-public class KafkaConsumer implements MessageConsumer {
+public class CustomKafkaConsumer implements MessageConsumer {
 
-    private final Logger logger = LoggerFactory.getLogger(KafkaConsumer.class);
+    private final Logger logger = LoggerFactory.getLogger(CustomKafkaConsumer.class);
 
     /**
      * 实例ID
@@ -70,7 +69,7 @@ public class KafkaConsumer implements MessageConsumer {
      */
     private final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
-    public KafkaConsumer(String instanceId, AdapterProperties kafkaProperties, Map<String, MessageHandler> batchMessageHandlers, Map<String, MessageHandler> transactionHandlers, Map<String, MessageHandler> broadcastHandlers) {
+    public CustomKafkaConsumer(String instanceId, AdapterProperties kafkaProperties, Map<String, MessageHandler> batchMessageHandlers, Map<String, MessageHandler> transactionHandlers, Map<String, MessageHandler> broadcastHandlers) {
         this.instanceId = instanceId;
         this.kafkaProperties = kafkaProperties;
         this.batchMessageHandlers = batchMessageHandlers;

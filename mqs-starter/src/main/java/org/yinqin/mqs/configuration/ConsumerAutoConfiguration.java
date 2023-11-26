@@ -20,8 +20,8 @@ import org.yinqin.mqs.common.handler.MessageHandler;
 import org.yinqin.mqs.common.manager.ConsumerManager;
 import org.yinqin.mqs.common.service.MessageConsumer;
 import org.yinqin.mqs.common.util.ConvertUtil;
-import org.yinqin.mqs.kafka.KafkaConsumer;
-import org.yinqin.mqs.rocketmq.RocketmqConsumer;
+import org.yinqin.mqs.kafka.CustomKafkaConsumer;
+import org.yinqin.mqs.rocketmq.CustomRocketmqConsumer;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -106,13 +106,13 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
                     logger.error("实例：{}，消费者启动失败，namesrvAddr不能为空", instanceId);
                     return;
                 }
-                consumer = new RocketmqConsumer(instanceId, config, batchMessageHandlers, messageHandlers, broadcastHandlers);
+                consumer = new CustomRocketmqConsumer(instanceId, config, batchMessageHandlers, messageHandlers, broadcastHandlers);
             } else if (config.getVendorName().equals("kafka")) {
                 if (StringUtils.isBlank(config.getKafka().getClientConfig().getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG))) {
                     logger.error("实例：{}，消费者启动失败，bootstrap.servers不能为空", instanceId);
                     return;
                 }
-                consumer = new KafkaConsumer(instanceId, config, batchMessageHandlers, messageHandlers, broadcastHandlers);
+                consumer = new CustomKafkaConsumer(instanceId, config, batchMessageHandlers, messageHandlers, broadcastHandlers);
             } else {
                 logger.warn("厂商类型{}暂未支持", config.getVendorName());
             }

@@ -28,9 +28,9 @@ import java.util.concurrent.TimeUnit;
  * @see org.yinqin.mqs.common.service.MessageProducer
  * @since 1.0.0
  */
-public class KafkaProducer implements MessageProducer {
+public class CustomKafkaProducer implements MessageProducer {
 
-    private final Logger logger = LoggerFactory.getLogger(KafkaProducer.class);
+    private final Logger logger = LoggerFactory.getLogger(CustomKafkaProducer.class);
 
     /**
      * 实例ID
@@ -47,7 +47,7 @@ public class KafkaProducer implements MessageProducer {
      */
     private final AdapterProperties kafkaProperties;
 
-    public KafkaProducer(String instanceId, AdapterProperties kafkaProperties) {
+    public CustomKafkaProducer(String instanceId, AdapterProperties kafkaProperties) {
         this.instanceId = instanceId;
         this.kafkaProperties = kafkaProperties;
     }

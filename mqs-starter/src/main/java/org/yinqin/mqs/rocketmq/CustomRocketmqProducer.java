@@ -30,9 +30,9 @@ import java.util.concurrent.TimeUnit;
  * @see org.yinqin.mqs.common.service.MessageConsumer
  * @since 1.0.0
  */
-public class RocketmqProducer implements MessageProducer {
+public class CustomRocketmqProducer implements MessageProducer {
 
-    private final Logger logger = LoggerFactory.getLogger(RocketmqProducer.class);
+    private final Logger logger = LoggerFactory.getLogger(CustomRocketmqProducer.class);
 
     /**
      * 实例ID
@@ -49,7 +49,7 @@ public class RocketmqProducer implements MessageProducer {
      */
     private DefaultMQProducer producer;
 
-    public RocketmqProducer(String instanceId, AdapterProperties rocketmqProperties) {
+    public CustomRocketmqProducer(String instanceId, AdapterProperties rocketmqProperties) {
         this.instanceId = instanceId;
         this.rocketmqProperties = rocketmqProperties;
     }

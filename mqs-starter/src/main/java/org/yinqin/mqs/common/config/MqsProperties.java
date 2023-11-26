@@ -79,12 +79,12 @@ public class MqsProperties {
         /**
          * rocketmq配置类
          */
-        private RocketmqProperties rocketmq = new RocketmqProperties();
+        private CustomRocketmqProperties rocketmq = new CustomRocketmqProperties();
 
         /**
          * kafka配置类
          */
-        private KafkaProperties kafka = new KafkaProperties();
+        private CustomKafkaProperties kafka = new CustomKafkaProperties();
 
         /**
          * 转换配置类
@@ -137,7 +137,7 @@ public class MqsProperties {
          * @since 1.0.0
          */
         @Data
-        public static class RocketmqProperties {
+        public static class CustomRocketmqProperties {
 
             /**
              * rocketmq acl访问控制
@@ -208,7 +208,7 @@ public class MqsProperties {
          * @since 1.0.0
          */
         @Data
-        public static class KafkaProperties {
+        public static class CustomKafkaProperties {
 
             /**
              * kafka其他源生配置项，可自行参考官网配置
