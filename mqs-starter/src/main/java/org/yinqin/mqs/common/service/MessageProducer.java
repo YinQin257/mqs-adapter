@@ -20,10 +20,8 @@ public interface MessageProducer extends DisposableBean {
 
     /**
      * 消息生产者启动方法
-     *
-     * @throws Exception none
      */
-    void start() throws Exception;
+    void start();
 
     /**
      * 同步发送消息方法

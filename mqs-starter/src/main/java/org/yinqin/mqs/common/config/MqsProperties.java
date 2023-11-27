@@ -13,7 +13,7 @@ import java.util.Properties;
  * 消息中间件自动装配配置类
  *
  * @author YinQin
- * @version 1.0.4
+ * @version 1.0.6
  * @createDate 2023年10月13日
  * @since 1.0.0
  */
@@ -218,48 +218,9 @@ public class MqsProperties {
             private Properties clientConfig;
 
             /**
-             * 拉取消息线程池配置
-             *
-             * @see PollTaskConfig
-             */
-            private PollTaskConfig pollTaskConfig = new PollTaskConfig();
-
-            /**
              * 拉取消息间隔时间，单位：毫秒
              */
             private int interval = 100;
-
-            /**
-             * 拉取消息线程池配置类
-             *
-             * @author YinQin
-             * @version 1.0.3
-             * @createDate 2023年10月13日
-             * @since 1.0.0
-             */
-            @Data
-            public static class PollTaskConfig {
-
-                /**
-                 * 核心线程数
-                 */
-                private int corePoolSize = 3;
-
-                /**
-                 * 最大线程数
-                 */
-                private int maxPoolSize = 3;
-
-                /**
-                 * 空闲线程最大存活时间
-                 */
-                private int keepAliveSeconds = 60;
-
-                /**
-                 * 等待队列大小
-                 */
-                private int queueCapacity = 20;
-            }
         }
     }
 

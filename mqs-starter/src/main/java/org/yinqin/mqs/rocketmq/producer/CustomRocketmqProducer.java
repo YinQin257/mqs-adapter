@@ -1,4 +1,4 @@
-package org.yinqin.mqs.rocketmq;
+package org.yinqin.mqs.rocketmq.producer;
 
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.client.AccessChannel;
@@ -22,10 +22,10 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
- * rocketmq生产者
+ * 自定义rocketmq生产者
  *
  * @author YinQin
- * @version 1.0.5
+ * @version 1.0.6
  * @createDate 2023年10月13日
  * @see org.yinqin.mqs.common.service.MessageConsumer
  * @since 1.0.0
@@ -47,21 +47,12 @@ public class CustomRocketmqProducer implements MessageProducer {
     /**
      * 源生rocketmq生产者
      */
-    private DefaultMQProducer producer;
+    private final DefaultMQProducer producer;
 
     public CustomRocketmqProducer(String instanceId, AdapterProperties rocketmqProperties) {
         this.instanceId = instanceId;
         this.rocketmqProperties = rocketmqProperties;
-    }
-
-    /**
-     * 启动rocketmq生产者
-     *
-     * @throws Exception none
-     */
-    @Override
-    public void start() throws Exception {
-        logger.info("实例：{} 生产者启动中，启动配置：{}", instanceId, rocketmqProperties.toString());
+        logger.info("实例：{} 生产者创建中，创建配置：{}", instanceId, rocketmqProperties.toString());
         String groupName = ConvertUtil.convertName(rocketmqProperties.getGroupName(), rocketmqProperties.getGroup());
         if (rocketmqProperties.getRocketmq().getAcl().isEnabled()) {
             producer = new DefaultMQProducer(groupName, new AclClientRPCHook(rocketmqProperties.getRocketmq().getAcl()));
@@ -71,7 +62,18 @@ public class CustomRocketmqProducer implements MessageProducer {
         producer.resetClientConfig(rocketmqProperties.getRocketmq().getClientConfig());
         producer.setInstanceName(UUID.randomUUID().toString().replace("-", "").substring(0, 8));
         producer.setAccessChannel(AccessChannel.CLOUD);
-        producer.start();
+    }
+
+    /**
+     * 启动rocketmq生产者
+     */
+    @Override
+    public void start() {
+        try {
+            producer.start();
+        } catch (MQClientException e) {
+            logger.error("实例：{} 生产者启动失败", instanceId, e);
+        }
         logger.info("实例：{} 生产者启动成功", instanceId);
     }
 

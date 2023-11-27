@@ -16,12 +16,13 @@ import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
 import org.yinqin.mqs.common.MessageAdapter;
 import org.yinqin.mqs.common.config.MqsProperties;
+import org.yinqin.mqs.common.factory.ConsumerFactory;
 import org.yinqin.mqs.common.handler.MessageHandler;
 import org.yinqin.mqs.common.manager.ConsumerManager;
 import org.yinqin.mqs.common.service.MessageConsumer;
 import org.yinqin.mqs.common.util.ConvertUtil;
-import org.yinqin.mqs.kafka.CustomKafkaConsumer;
-import org.yinqin.mqs.rocketmq.CustomRocketmqConsumer;
+import org.yinqin.mqs.kafka.consumer.KafkaConsumerFactory;
+import org.yinqin.mqs.rocketmq.consumer.RocketmqConsumerFactory;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ import java.util.Map;
  * 消息适配器消费者自动装配类
  *
  * @author YinQin
- * @version 1.0.5
+ * @version 1.0.6
  * @createDate 2023年10月13日
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.beans.factory.DisposableBean
@@ -56,13 +57,11 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
      */
     @Override
     public void destroy() {
-        for (Map.Entry<String, MessageConsumer> entry : consumerManager.entrySet()) {
-            String consumerType = entry.getKey();
-            MessageConsumer consumer = entry.getValue();
+        for (MessageConsumer consumer : consumerManager) {
             try {
                 consumer.destroy();
             } catch (Exception e) {
-                logger.error("注销{}消费组失败：", consumerType, e);
+                logger.error("注销消费组失败：", e);
             }
         }
     }
@@ -73,6 +72,8 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
      */
     @Override
     public void afterPropertiesSet() {
+        ConsumerFactory rocketmqConsumerFactory = new RocketmqConsumerFactory();
+        ConsumerFactory kafkaConsumerFactory = new KafkaConsumerFactory();
         Map<String, MessageHandler> messageHandlerBeans = applicationContext.getBeansOfType(MessageHandler.class);
         properties.getAdapter().forEach((instanceId, config) -> {
             if (!config.isConsumerEnabled()) return;
@@ -100,30 +101,31 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
                     }
                 }
             });
-            MessageConsumer consumer = null;
             if (config.getVendorName().equals("rocketmq")) {
                 if (StringUtils.isBlank(config.getRocketmq().getClientConfig().getNamesrvAddr())) {
                     logger.error("实例：{}，消费者启动失败，namesrvAddr不能为空", instanceId);
                     return;
                 }
-                consumer = new CustomRocketmqConsumer(instanceId, config, batchMessageHandlers, messageHandlers, broadcastHandlers);
+                if (!messageHandlers.isEmpty())
+                    consumerManager.add(rocketmqConsumerFactory.createTranConsumer(instanceId, config, messageHandlers));
+                if (!batchMessageHandlers.isEmpty())
+                    consumerManager.add(rocketmqConsumerFactory.createBatchConsumer(instanceId, config, batchMessageHandlers));
+                if (!broadcastHandlers.isEmpty())
+                    consumerManager.add(rocketmqConsumerFactory.createBroadcastConsumer(instanceId, config, broadcastHandlers));
             } else if (config.getVendorName().equals("kafka")) {
                 if (StringUtils.isBlank(config.getKafka().getClientConfig().getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG))) {
                     logger.error("实例：{}，消费者启动失败，bootstrap.servers不能为空", instanceId);
                     return;
                 }
-                consumer = new CustomKafkaConsumer(instanceId, config, batchMessageHandlers, messageHandlers, broadcastHandlers);
+                if (!messageHandlers.isEmpty())
+                    consumerManager.add(kafkaConsumerFactory.createTranConsumer(instanceId, config, messageHandlers));
+                if (!batchMessageHandlers.isEmpty())
+                    consumerManager.add(kafkaConsumerFactory.createBatchConsumer(instanceId, config, batchMessageHandlers));
+                if (!broadcastHandlers.isEmpty())
+                    consumerManager.add(kafkaConsumerFactory.createBroadcastConsumer(instanceId, config, broadcastHandlers));
             } else {
                 logger.warn("厂商类型{}暂未支持", config.getVendorName());
             }
-            if (consumer == null) return;
-            try {
-                consumer.start();
-                consumerManager.put(instanceId, consumer);
-            } catch (Exception e) {
-                logger.error("实例：{}，消费者启动失败", instanceId, e);
-            }
-
         });
     }
 

@@ -3,6 +3,7 @@ package org.yinqin.mqs.common.util;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.rocketmq.common.message.Message;
+import org.yinqin.mqs.common.Consts;
 import org.yinqin.mqs.common.config.MqsProperties.AdapterProperties;
 import org.yinqin.mqs.common.entity.AdapterMessage;
 
@@ -15,11 +16,6 @@ import org.yinqin.mqs.common.entity.AdapterMessage;
  * @since 1.0.4
  */
 public class ConvertUtil {
-
-    public static final String UNDER_SCORE = "_";
-
-    public static final String HYPHEN = "-";
-
     /**
      * topic名称或者消费组名称转换
      *
@@ -35,8 +31,8 @@ public class ConvertUtil {
             name = name.concat(convertProperties.getSuffix());
         if (convertProperties.isLowerToUpper()) name = name.toUpperCase();
         if (convertProperties.isUpperToLower()) name = name.toLowerCase();
-        if (convertProperties.isUnderScoreToHyphen()) name = name.replace(UNDER_SCORE, HYPHEN);
-        if (convertProperties.isHyphenToUnderScore()) name = name.replace(HYPHEN, UNDER_SCORE);
+        if (convertProperties.isUnderScoreToHyphen()) name = name.replace(Consts.UNDER_SCORE, Consts.HYPHEN);
+        if (convertProperties.isHyphenToUnderScore()) name = name.replace(Consts.HYPHEN, Consts.UNDER_SCORE);
         return name;
     }
 

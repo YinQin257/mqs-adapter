@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.github.yinqin257</groupId>
         <artifactId>mqs-adapter</artifactId>
-        <version>1.0.5</version>
+        <version>1.0.6</version>
     </parent>
     <description>消息中间件适配器</description>
     <artifactId>mqs-starter</artifactId>

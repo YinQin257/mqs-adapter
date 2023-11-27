@@ -1,4 +1,4 @@
-package org.yinqin.mqs.kafka;
+package org.yinqin.mqs.kafka.producer;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -20,10 +20,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
- * kafka生产者
+ * 自定义kafka生产者
  *
  * @author YinQin
- * @version 1.0.5
+ * @version 1.0.6
  * @createDate 2023年10月13日
  * @see org.yinqin.mqs.common.service.MessageProducer
  * @since 1.0.0

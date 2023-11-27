@@ -12,7 +12,12 @@ package org.yinqin.mqs.common;
 public interface Consts {
     int SUCCESS = 1;
     int ERROR = 0;
-    String BATCH = "BATCH";
-    String TRAN = "TRAN";
-    String BROADCAST = "BROADCAST";
+    String TRUE = "true";
+    String EMPTY = "";
+    String HYPHEN = "-";
+    String UNDER_SCORE = "_";
+    String BROADCAST_CONNECTOR = "_BROADCAST_";
+    String BROADCAST_SUFFIX = "_BROADCAST";
+    String BATCH_SUFFIX = "_BATCH";
+    String WILDCARD ="*";
 }
