@@ -103,7 +103,7 @@ public class ConsumerAutoConfiguration implements InitializingBean, DisposableBe
             });
             if (config.getVendorName().equals("rocketmq")) {
                 if (StringUtils.isBlank(config.getRocketmq().getClientConfig().getNamesrvAddr())) {
-                    logger.error("实例：{}，消费者启动失败，namesrvAddr不能为空", instanceId);
+                    logger.error("实例：{}，消费者启动失败，地址不能为空", instanceId);
                     return;
                 }
                 if (!messageHandlers.isEmpty())

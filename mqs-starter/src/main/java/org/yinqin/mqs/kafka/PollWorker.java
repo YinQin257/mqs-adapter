@@ -1,5 +1,6 @@
 package org.yinqin.mqs.kafka;
 
+import cn.hutool.core.thread.ThreadUtil;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
  * 拉取消息工作线程
  *
  * @author YinQin
- * @version 1.0.4
+ * @version 1.0.6
  * @createDate 2023年10月13日
  * @see Runnable
  * @since 1.0.0
@@ -63,7 +64,7 @@ public class PollWorker implements Runnable {
                 try {
                     List<AdapterMessage> messages = fetchMessages();
                     if (messages.isEmpty()) {
-                        Thread.sleep(interval);
+                        ThreadUtil.sleep(interval);
                         continue;
                     }
 

@@ -15,8 +15,6 @@ public interface MessageConsumer extends DisposableBean {
 
     /**
      * 消费组启动方法
-     *
-     * @throws Exception none
      */
-    void start() throws Exception;
+    void start();
 }

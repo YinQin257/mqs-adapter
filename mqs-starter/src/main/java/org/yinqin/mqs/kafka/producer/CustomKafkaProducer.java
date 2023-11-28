@@ -7,7 +7,7 @@ import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yinqin.mqs.common.Consts;
+import org.yinqin.mqs.common.Constants;
 import org.yinqin.mqs.common.config.MqsProperties.AdapterProperties;
 import org.yinqin.mqs.common.entity.AdapterMessage;
 import org.yinqin.mqs.common.entity.MessageCallback;
@@ -78,9 +78,9 @@ public class CustomKafkaProducer implements MessageProducer {
         try {
             Future<RecordMetadata> future = kafkaProducer.send(producerRecord);
             future.get(3000, TimeUnit.MILLISECONDS);
-            messageSendResult.setStatus(Consts.SUCCESS);
+            messageSendResult.setStatus(Constants.SUCCESS);
         } catch (Exception e) {
-            messageSendResult.setStatus(Consts.ERROR);
+            messageSendResult.setStatus(Constants.ERROR);
             messageSendResult.setThrowable(e);
             logger.error("同步消息发送失败，失败原因：", e);
         }
@@ -102,9 +102,9 @@ public class CustomKafkaProducer implements MessageProducer {
         try {
             Future<RecordMetadata> future = kafkaProducer.send(producerRecord);
             future.get(timeout, unit);
-            messageSendResult.setStatus(Consts.SUCCESS);
+            messageSendResult.setStatus(Constants.SUCCESS);
         } catch (Exception e) {
-            messageSendResult.setStatus(Consts.ERROR);
+            messageSendResult.setStatus(Constants.ERROR);
             messageSendResult.setThrowable(e);
             logger.error("同步消息发送失败，失败原因：", e);
         }

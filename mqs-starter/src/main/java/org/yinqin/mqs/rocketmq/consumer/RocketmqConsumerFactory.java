@@ -9,7 +9,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yinqin.mqs.common.Consts;
+import org.yinqin.mqs.common.Constants;
 import org.yinqin.mqs.common.MessageAdapter;
 import org.yinqin.mqs.common.config.MqsProperties;
 import org.yinqin.mqs.common.entity.AdapterMessage;
@@ -53,7 +53,7 @@ public class RocketmqConsumerFactory implements ConsumerFactory {
     public MessageConsumer createBatchConsumer(String instanceId, MqsProperties.AdapterProperties properties, Map<String, MessageHandler> messageHandlers) {
         CustomRocketmqConsumer consumer = new CustomRocketmqConsumer(instanceId, properties);
         init(consumer.getConsumer(), properties);
-        String groupName = ConvertUtil.convertName(properties.getGroupName() + Consts.BATCH_SUFFIX, properties.getGroup());
+        String groupName = ConvertUtil.convertName(properties.getGroupName() + Constants.BATCH_SUFFIX, properties.getGroup());
         consumer.getConsumer().setConsumerGroup(groupName);
         subscribe(consumer.getConsumer(), instanceId, groupName, messageHandlers);
         registerMessageListener(consumer.getConsumer(), messageHandlers);
@@ -65,7 +65,7 @@ public class RocketmqConsumerFactory implements ConsumerFactory {
     public MessageConsumer createBroadcastConsumer(String instanceId, MqsProperties.AdapterProperties properties, Map<String, MessageHandler> messageHandlers) {
         CustomRocketmqConsumer consumer = new CustomRocketmqConsumer(instanceId, properties);
         init(consumer.getConsumer(), properties);
-        String groupName = ConvertUtil.convertName(properties.getGroupName() + Consts.BROADCAST_SUFFIX, properties.getGroup());
+        String groupName = ConvertUtil.convertName(properties.getGroupName() + Constants.BROADCAST_SUFFIX, properties.getGroup());
         consumer.getConsumer().setConsumerGroup(groupName);
         consumer.getConsumer().setMessageModel(MessageModel.BROADCASTING);
         subscribe(consumer.getConsumer(), instanceId, groupName, messageHandlers);
@@ -82,7 +82,7 @@ public class RocketmqConsumerFactory implements ConsumerFactory {
      */
     private void init(DefaultMQPushConsumer consumer, MqsProperties.AdapterProperties properties) {
         consumer.resetClientConfig(properties.getRocketmq().getClientConfig());
-        consumer.setInstanceName(UUID.randomUUID().toString().replace(Consts.HYPHEN, Consts.EMPTY).substring(0, 8));
+        consumer.setInstanceName(UUID.randomUUID().toString().replace(Constants.HYPHEN, Constants.EMPTY).substring(0, 8));
         consumer.setConsumeMessageBatchMaxSize(properties.getRocketmq().getConsumeMessageBatchMaxSize()); //公共消息可以配置每次消费数量,默认为1
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
         consumer.setConsumeThreadMax(properties.getRocketmq().getConsumeThreadMax());
@@ -103,7 +103,7 @@ public class RocketmqConsumerFactory implements ConsumerFactory {
         for (String topic : messageHandlers.keySet()) {
             logger.info("实例：{} 消费者启动中，消费组：{}，订阅Topic：{}", instanceId, groupName, topic);
             try {
-                consumer.subscribe(topic, Consts.WILDCARD);
+                consumer.subscribe(topic, Constants.WILDCARD);
             } catch (MQClientException e) {
                 throw new RuntimeException(e);
             }
@@ -117,11 +117,11 @@ public class RocketmqConsumerFactory implements ConsumerFactory {
      * @param messageHandlers 消息处理器
      */
     private void registerMessageListener(DefaultMQPushConsumer consumer, Map<String, MessageHandler> messageHandlers) {
-        consumer.registerMessageListener((MessageListenerConcurrently) (msgs, context) -> {
-            if (msgs.isEmpty()) return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-            MessageExt firstMsg = msgs.get(0); //每次只拉取一条
+        consumer.registerMessageListener((MessageListenerConcurrently) (messageList, context) -> {
+            if (messageList.isEmpty()) return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+            MessageExt firstMsg = messageList.get(0); //每次只拉取一条
             List<AdapterMessage> messages = new ArrayList<>();
-            msgs.forEach(msg -> {
+            messageList.forEach(msg -> {
                 AdapterMessage message = AdapterMessage.builder()
                         .topic(msg.getTopic())
                         .tag(msg.getTags())

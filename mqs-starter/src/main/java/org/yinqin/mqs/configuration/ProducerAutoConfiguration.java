@@ -48,7 +48,7 @@ public abstract class ProducerAutoConfiguration extends ConsumerManager {
             }
             if (config.getVendorName().equals("rocketmq")) {
                 if (StringUtils.isBlank(config.getRocketmq().getClientConfig().getNamesrvAddr())) {
-                    logger.error("实例：{}，生产者启动失败，namesrvAddr不能为空", instanceId);
+                    logger.error("实例：{}，生产者启动失败，地址不能为空", instanceId);
                     return;
                 }
                 producerManager.put(instanceId, rocketmqProducerFactory.createProducer(instanceId, config));

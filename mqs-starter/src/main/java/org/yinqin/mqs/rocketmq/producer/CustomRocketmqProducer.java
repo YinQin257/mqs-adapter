@@ -10,7 +10,7 @@ import org.apache.rocketmq.client.producer.SendStatus;
 import org.apache.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yinqin.mqs.common.Consts;
+import org.yinqin.mqs.common.Constants;
 import org.yinqin.mqs.common.config.MqsProperties.AdapterProperties;
 import org.yinqin.mqs.common.entity.AdapterMessage;
 import org.yinqin.mqs.common.entity.MessageCallback;
@@ -92,13 +92,13 @@ public class CustomRocketmqProducer implements MessageProducer {
             SendResult sendResult = producer.send(message);
             adapterMessage.setMsgId(sendResult.getMsgId());
             if (sendResult.getSendStatus() == SendStatus.SEND_OK) {
-                messageSendResult.setStatus(Consts.SUCCESS);
+                messageSendResult.setStatus(Constants.SUCCESS);
             } else {
-                messageSendResult.setStatus(Consts.ERROR);
+                messageSendResult.setStatus(Constants.ERROR);
                 messageSendResult.setThrowable(new MQClientException(0, sendResult.getSendStatus().name()));
             }
         } catch (Exception e) {
-            messageSendResult.setStatus(Consts.ERROR);
+            messageSendResult.setStatus(Constants.ERROR);
             messageSendResult.setThrowable(e);
             logger.error("同步消息发送失败，失败原因：", e);
         }
@@ -121,13 +121,13 @@ public class CustomRocketmqProducer implements MessageProducer {
             SendResult sendResult = producer.send(message, unit.toMillis(timeout));
             adapterMessage.setMsgId(sendResult.getMsgId());
             if (sendResult.getSendStatus() == SendStatus.SEND_OK) {
-                messageSendResult.setStatus(Consts.SUCCESS);
+                messageSendResult.setStatus(Constants.SUCCESS);
             } else {
-                messageSendResult.setStatus(Consts.ERROR);
+                messageSendResult.setStatus(Constants.ERROR);
                 messageSendResult.setThrowable(new MQClientException(0, sendResult.getSendStatus().name()));
             }
         } catch (Exception e) {
-            messageSendResult.setStatus(Consts.ERROR);
+            messageSendResult.setStatus(Constants.ERROR);
             messageSendResult.setThrowable(e);
             logger.error("同步消息发送失败，失败原因：", e);
         }

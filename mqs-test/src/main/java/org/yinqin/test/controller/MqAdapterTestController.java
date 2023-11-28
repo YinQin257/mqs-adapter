@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.yinqin.mqs.common.Consts;
+import org.yinqin.mqs.common.Constants;
 import org.yinqin.mqs.common.entity.AdapterMessage;
 import org.yinqin.mqs.common.entity.MessageCallback;
 import org.yinqin.mqs.common.entity.MessageSendResult;
@@ -105,7 +105,7 @@ public class MqAdapterTestController {
         for (int i = 0; i < pubCount; i++) {
             AdapterMessage message = AdapterMessage.builder().topic(topic).body("This is a sync message".getBytes(StandardCharsets.UTF_8)).build();
             MessageSendResult send = producer.sendMessage(message);
-            if (send.getStatus() == Consts.SUCCESS) logger.info("消息同步发送成功");
+            if (send.getStatus() == Constants.SUCCESS) logger.info("消息同步发送成功");
             else logger.info("消息同步发送失败,原因:" + send.getThrowable().getMessage());
         }
     }
