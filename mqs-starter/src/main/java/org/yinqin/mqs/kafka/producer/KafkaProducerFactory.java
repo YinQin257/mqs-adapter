@@ -13,7 +13,7 @@ import org.yinqin.mqs.common.service.MessageProducer;
  * @see org.yinqin.mqs.common.factory.ProducerFactory
  * @since 1.0.6
  */
-public class KafkaProducerFactory implements ProducerFactory {
+public class KafkaProducerFactory extends ProducerFactory {
     @Override
     public MessageProducer createProducer(String instanceId, MqsProperties.AdapterProperties kafkaProperties) {
         CustomKafkaProducer customKafkaProducer = new CustomKafkaProducer(instanceId, kafkaProperties);

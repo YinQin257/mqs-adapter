@@ -122,11 +122,9 @@ public class CustomKafkaProducer implements MessageProducer {
         ProducerRecord<String, byte[]> producerRecord = ConvertUtil.AdapterMessageToKafkaMessage(message, kafkaProperties.getTopic());
         try {
             kafkaProducer.send(producerRecord, (recordMetadata, e) -> {
-                if (e == null) {
-                    if (callback != null) callback.onSuccess();
-                } else {
-                    if (callback != null) callback.onError(e);
-                }
+                if (callback == null) return;
+                if (e == null) callback.onSuccess();
+                else callback.onError(e);
             });
         } catch (Exception e) {
             logger.error("异步消息发送失败，失败原因：", e);

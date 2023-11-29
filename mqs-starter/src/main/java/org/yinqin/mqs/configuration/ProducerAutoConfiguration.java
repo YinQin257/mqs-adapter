@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.yinqin.mqs.common.config.MqsProperties;
 import org.yinqin.mqs.common.factory.ProducerFactory;
-import org.yinqin.mqs.common.manager.ConsumerManager;
 import org.yinqin.mqs.common.manager.ProducerManager;
 import org.yinqin.mqs.kafka.producer.KafkaProducerFactory;
 import org.yinqin.mqs.rocketmq.producer.RocketmqProducerFactory;
@@ -26,7 +25,7 @@ import org.yinqin.mqs.rocketmq.producer.RocketmqProducerFactory;
  */
 @Configuration
 @EnableConfigurationProperties({MqsProperties.class})
-public abstract class ProducerAutoConfiguration extends ConsumerManager {
+public abstract class ProducerAutoConfiguration {
 
     private final Logger logger = LoggerFactory.getLogger(ProducerAutoConfiguration.class);
 

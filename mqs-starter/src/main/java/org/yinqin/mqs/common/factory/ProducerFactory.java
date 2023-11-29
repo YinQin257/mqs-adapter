@@ -11,7 +11,7 @@ import org.yinqin.mqs.common.service.MessageProducer;
  * @since 1.0.6
  * @version 1.0.6
  */
-public interface ProducerFactory {
+public abstract class ProducerFactory {
 
     /**
      * 创建生产者
@@ -19,5 +19,5 @@ public interface ProducerFactory {
      * @param properties 配置
      * @return 生产者
      */
-    MessageProducer createProducer(String instanceId, MqsProperties.AdapterProperties properties);
+    public abstract MessageProducer createProducer(String instanceId, MqsProperties.AdapterProperties properties);
 }

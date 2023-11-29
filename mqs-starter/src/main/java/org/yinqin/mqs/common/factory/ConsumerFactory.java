@@ -14,7 +14,7 @@ import java.util.Map;
  * @createDate 2023年11月27日
  * @since 1.0.6
  */
-public interface ConsumerFactory {
+public abstract class ConsumerFactory {
 
     /**
      * 创建单条消费者
@@ -24,7 +24,7 @@ public interface ConsumerFactory {
      * @param messageHandlers 消息处理器
      * @return 单条消费者
      */
-    MessageConsumer createTranConsumer(String instanceId, MqsProperties.AdapterProperties properties, Map<String, MessageHandler> messageHandlers);
+    public abstract MessageConsumer createTranConsumer(String instanceId, MqsProperties.AdapterProperties properties, Map<String, MessageHandler> messageHandlers);
 
     /**
      * 创建批量消费者
@@ -34,7 +34,7 @@ public interface ConsumerFactory {
      * @param messageHandlers 消息处理器
      * @return 批量消费者
      */
-    MessageConsumer createBatchConsumer(String instanceId, MqsProperties.AdapterProperties properties, Map<String, MessageHandler> messageHandlers);
+    public abstract MessageConsumer createBatchConsumer(String instanceId, MqsProperties.AdapterProperties properties, Map<String, MessageHandler> messageHandlers);
 
     /**
      * 创建广播消费者
@@ -44,5 +44,5 @@ public interface ConsumerFactory {
      * @param messageHandlers 消息处理器
      * @return 广播消费者
      */
-    MessageConsumer createBroadcastConsumer(String instanceId, MqsProperties.AdapterProperties properties, Map<String, MessageHandler> messageHandlers);
+    public abstract MessageConsumer createBroadcastConsumer(String instanceId, MqsProperties.AdapterProperties properties, Map<String, MessageHandler> messageHandlers);
 }

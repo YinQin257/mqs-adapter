@@ -32,7 +32,7 @@ import java.util.UUID;
  * @see org.yinqin.mqs.common.factory.ConsumerFactory
  * @since 1.0.6
  */
-public class RocketmqConsumerFactory implements ConsumerFactory {
+public class RocketmqConsumerFactory extends ConsumerFactory {
 
     private final Logger logger = LoggerFactory.getLogger(RocketmqConsumerFactory.class);
 

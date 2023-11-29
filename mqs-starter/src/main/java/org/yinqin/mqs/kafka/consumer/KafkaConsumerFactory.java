@@ -28,7 +28,7 @@ import java.util.UUID;
  * @see org.yinqin.mqs.common.factory.ConsumerFactory
  * @version 1.0.6
  */
-public class KafkaConsumerFactory implements ConsumerFactory {
+public class KafkaConsumerFactory extends ConsumerFactory {
 
     private final Logger logger = LoggerFactory.getLogger(KafkaConsumerFactory.class);
     @Override
