@@ -25,7 +25,7 @@ import org.yinqin.mqs.rocketmq.producer.RocketmqProducerFactory;
  */
 @Configuration
 @EnableConfigurationProperties({MqsProperties.class})
-public abstract class ProducerAutoConfiguration {
+public class ProducerAutoConfiguration {
 
     private final Logger logger = LoggerFactory.getLogger(ProducerAutoConfiguration.class);
 
@@ -50,13 +50,13 @@ public abstract class ProducerAutoConfiguration {
                     logger.error("实例：{}，生产者启动失败，地址不能为空", instanceId);
                     return;
                 }
-                producerManager.put(instanceId, rocketmqProducerFactory.createProducer(instanceId, config));
+                producerManager.put(instanceId, rocketmqProducerFactory.startProducer(instanceId, config));
             } else if (config.getVendorName().equals("kafka")) {
                 if (StringUtils.isBlank(config.getKafka().getClientConfig().getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG))) {
                     logger.error("实例：{}，生产者启动失败，bootstrap.servers不能为空", instanceId);
                     return;
                 }
-                producerManager.put(instanceId, kafkaProducerFactory.createProducer(instanceId, config));
+                producerManager.put(instanceId, kafkaProducerFactory.startProducer(instanceId, config));
             } else {
                 logger.warn("厂商类型{}暂未支持", config.getVendorName());
             }

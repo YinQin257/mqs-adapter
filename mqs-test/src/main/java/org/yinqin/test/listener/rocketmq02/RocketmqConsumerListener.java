@@ -2,10 +2,12 @@ package org.yinqin.test.listener.rocketmq02;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yinqin.mqs.common.MessageAdapter;
 import org.yinqin.mqs.common.entity.AdapterMessage;
 import org.yinqin.mqs.common.handler.MessageHandler;
+import org.yinqin.mqs.common.manager.ProducerManager;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -24,9 +26,20 @@ public class RocketmqConsumerListener implements MessageHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(RocketmqConsumerListener.class);
 
+    @Autowired
+    ProducerManager producerManager;
+
     @Override
     public void process(AdapterMessage message) throws Exception {
-        logger.info("收到消息，TOPIC：{}，消息内容是：{}", message.getTopic(), new String(message.getBody(), StandardCharsets.UTF_8));
+//        String messageStr = new String(message.getBody(), StandardCharsets.UTF_8);
+//        int i = Integer.parseInt(messageStr);
+//        if (SequentialConsumer.getInstance().getConsumerId().get() == i) {
+//            logger.info("顺序消费，TOPIC：{}，消息内容是：{}", message.getTopic(), new String(message.getBody(), StandardCharsets.UTF_8));
+//            SequentialConsumer.getInstance().getConsumerId().addAndGet(1);
+//        } else {
+//            producerManager.get("rocketmq02").sendMessage(message);
+//            logger.error("非顺序消费，拒绝消费");
+//        }
     }
 
     @Override

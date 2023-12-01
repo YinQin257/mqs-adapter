@@ -1,5 +1,6 @@
 package org.yinqin.mqs.rocketmq.producer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.client.AccessChannel;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -89,7 +90,17 @@ public class CustomRocketmqProducer implements MessageProducer {
 
         MessageSendResult messageSendResult = new MessageSendResult();
         try {
-            SendResult sendResult = producer.send(message);
+            String bizKey = adapterMessage.getBizKey();
+            SendResult sendResult;
+            if (StringUtils.isNotBlank(bizKey) && StringUtils.isNumeric(bizKey)) {
+                sendResult = producer.send(message, (list, message1, o) -> {
+                    int id = o.hashCode();
+                    int index = id % list.size();
+                    return list.get(index);
+                },bizKey);
+            } else {
+                sendResult = producer.send(message);
+            }
             adapterMessage.setMsgId(sendResult.getMsgId());
             if (sendResult.getSendStatus() == SendStatus.SEND_OK) {
                 messageSendResult.setStatus(Constants.SUCCESS);
@@ -118,7 +129,17 @@ public class CustomRocketmqProducer implements MessageProducer {
         Message message = ConvertUtil.AdapterMessageToRocketmqMessage(adapterMessage, rocketmqProperties.getTopic());
         MessageSendResult messageSendResult = new MessageSendResult();
         try {
-            SendResult sendResult = producer.send(message, unit.toMillis(timeout));
+            String bizKey = adapterMessage.getBizKey();
+            SendResult sendResult;
+            if (StringUtils.isNotBlank(bizKey) && StringUtils.isNumeric(bizKey)) {
+                sendResult = producer.send(message, (list, message1, o) -> {
+                    int id = o.hashCode();
+                    int index = id % list.size();
+                    return list.get(index);
+                },bizKey,unit.toMillis(timeout));
+            } else {
+                sendResult = producer.send(message, unit.toMillis(timeout));
+            }
             adapterMessage.setMsgId(sendResult.getMsgId());
             if (sendResult.getSendStatus() == SendStatus.SEND_OK) {
                 messageSendResult.setStatus(Constants.SUCCESS);
@@ -144,18 +165,38 @@ public class CustomRocketmqProducer implements MessageProducer {
     public void sendMessage(AdapterMessage adapterMessage, MessageCallback callback) {
         Message message = ConvertUtil.AdapterMessageToRocketmqMessage(adapterMessage, rocketmqProperties.getTopic());
         try {
-            producer.send(message, new SendCallback() {
-                @Override
-                public void onSuccess(SendResult sendResult) {
-                    adapterMessage.setMsgId(sendResult.getMsgId());
-                    if (callback != null) callback.onSuccess();
-                }
+            String bizKey = adapterMessage.getBizKey();
+            if (StringUtils.isNotBlank(bizKey) && StringUtils.isNumeric(bizKey)) {
+                producer.send(message, (list, message1, o) -> {
+                    int id = o.hashCode();
+                    int index = id % list.size();
+                    return list.get(index);
+                },bizKey,new SendCallback() {
+                    @Override
+                    public void onSuccess(SendResult sendResult) {
+                        adapterMessage.setMsgId(sendResult.getMsgId());
+                        if (callback != null) callback.onSuccess();
+                    }
 
-                @Override
-                public void onException(Throwable e) {
-                    if (callback != null) callback.onError(e);
-                }
-            });
+                    @Override
+                    public void onException(Throwable e) {
+                        if (callback != null) callback.onError(e);
+                    }
+                });
+            } else {
+                producer.send(message, new SendCallback() {
+                    @Override
+                    public void onSuccess(SendResult sendResult) {
+                        adapterMessage.setMsgId(sendResult.getMsgId());
+                        if (callback != null) callback.onSuccess();
+                    }
+
+                    @Override
+                    public void onException(Throwable e) {
+                        if (callback != null) callback.onError(e);
+                    }
+                });
+            }
         } catch (Exception e) {
             logger.error("异步消息发送失败，失败原因：", e);
         }

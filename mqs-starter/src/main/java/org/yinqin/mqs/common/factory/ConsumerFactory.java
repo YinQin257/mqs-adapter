@@ -17,32 +17,26 @@ import java.util.Map;
 public abstract class ConsumerFactory {
 
     /**
-     * 创建单条消费者
+     * 启动消费者方法，消费者具体是什么类型由子类控制
+     * @param instanceId 实例ID
+     * @param properties 配置类
+     * @param messageHandlers 消费者集合
+     * @return  消费者实例
+     */
+    public MessageConsumer startConsumer(String instanceId, MqsProperties.AdapterProperties properties, Map<String, MessageHandler> messageHandlers) {
+        MessageConsumer consumer = createConsumer(instanceId, properties, messageHandlers);
+        consumer.start();
+        return consumer;
+    }
+
+    /**
+     * 工厂方法
      *
-     * @param instanceId      实例ID
-     * @param properties      配置
+     * @param instanceId 实例ID
+     * @param properties 配置
      * @param messageHandlers 消息处理器
      * @return 单条消费者
      */
-    public abstract MessageConsumer createTranConsumer(String instanceId, MqsProperties.AdapterProperties properties, Map<String, MessageHandler> messageHandlers);
+    public abstract MessageConsumer createConsumer(String instanceId, MqsProperties.AdapterProperties properties, Map<String, MessageHandler> messageHandlers);
 
-    /**
-     * 创建批量消费者
-     *
-     * @param instanceId      实例ID
-     * @param properties      配置
-     * @param messageHandlers 消息处理器
-     * @return 批量消费者
-     */
-    public abstract MessageConsumer createBatchConsumer(String instanceId, MqsProperties.AdapterProperties properties, Map<String, MessageHandler> messageHandlers);
-
-    /**
-     * 创建广播消费者
-     *
-     * @param instanceId      实例ID
-     * @param properties      配置
-     * @param messageHandlers 消息处理器
-     * @return 广播消费者
-     */
-    public abstract MessageConsumer createBroadcastConsumer(String instanceId, MqsProperties.AdapterProperties properties, Map<String, MessageHandler> messageHandlers);
 }

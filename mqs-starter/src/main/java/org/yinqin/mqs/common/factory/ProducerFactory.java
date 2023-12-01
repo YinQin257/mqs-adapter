@@ -14,10 +14,22 @@ import org.yinqin.mqs.common.service.MessageProducer;
 public abstract class ProducerFactory {
 
     /**
-     * 创建生产者
+     * 工厂方法
      * @param instanceId 实例ID
      * @param properties 配置
      * @return 生产者
      */
     public abstract MessageProducer createProducer(String instanceId, MqsProperties.AdapterProperties properties);
+
+    /**
+     * 启动生产者
+     * @param instanceId 实例ID
+     * @param properties 配置类
+     * @return 生产者实例
+     */
+    public MessageProducer startProducer(String instanceId, MqsProperties.AdapterProperties properties){
+        MessageProducer producer = createProducer(instanceId, properties);
+        producer.start();
+        return producer;
+    }
 }

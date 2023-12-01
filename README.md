@@ -2,6 +2,10 @@
 
 > 消息中间件适配器
 
+## 简介
+
+mqs-adapter，顾名思义，多消息中间件适配器。（引入多数据源的概念后，它就不单单是一个适配器了，更像是一个管理器）。
+
 ![消息适配器](消息适配器.svg)
 
 ## 功能清单
@@ -20,7 +24,7 @@
 <dependency>
     <groupId>io.github.yinqin257</groupId>
     <artifactId>mqs-starter</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
 </dependency>
 ```
 

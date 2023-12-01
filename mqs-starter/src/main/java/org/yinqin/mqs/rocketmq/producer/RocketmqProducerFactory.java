@@ -14,8 +14,6 @@ import org.yinqin.mqs.common.service.MessageProducer;
 public class RocketmqProducerFactory extends ProducerFactory {
     @Override
     public MessageProducer createProducer(String instanceId, MqsProperties.AdapterProperties rocketmqProperties) {
-        CustomRocketmqProducer customRocketmqProducer = new CustomRocketmqProducer(instanceId, rocketmqProperties);
-        customRocketmqProducer.start();
-        return customRocketmqProducer;
+        return new CustomRocketmqProducer(instanceId, rocketmqProperties);
     }
 }
