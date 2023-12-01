@@ -4,7 +4,7 @@
 
 ## 简介
 
-mqs-adapter，顾名思义，多消息中间件适配器。（引入多数据源的概念后，它就不单单是一个适配器了，更像是一个管理器）。
+mqs-adapter，顾名思义，多消息中间件适配器。（具备多数据源的能力后，它就不单单是一个适配器了，更像是一个管理器）。
 
 ![消息适配器](消息适配器.svg)
 
@@ -15,6 +15,7 @@ mqs-adapter，顾名思义，多消息中间件适配器。（引入多数据源
 - 支持多种消费模式，批量消费，单条消费，广播消费
 - 支持对消费组名称和topic名称做转换处理 --1.0.5新增
 - 支持默认实例（默认数据源，可以不配置实例ID）--1.0.5新增
+- 支持根据bizKey的值来指定分区或队列功能 -- 1.0.6新增
 
 ## 使用说明
 
@@ -285,11 +286,37 @@ public class BatchBroadcastConsumerListener implements MessageHandler {
     }
 }
 ```
+### 对于顺序消费的支持
+
+1.0.6版本后，添加了对顺序消费的支持，具体实现如下：
+
+使用者将需要顺序消费的业务流程唯一标识传入到bizKey字段中
+
+Rocketmq
+
+```java
+// 通过计算消息实体中bizKey的hashCode值，并对topic队列数量取模后，得到该业务流程的消息应该向那个队列发送
+producer.send(message, new MessageQueueSelector() {
+                    @Override
+                    public MessageQueue select(List<MessageQueue> list, Message message1, Object o) {
+                        int id = o.hashCode();
+                        int index = id % list.size();
+                        return list.get(index);
+                    }
+                },bizKey);
+```
+
+Kafka
+
+kafka默认将按照bizKey的散列值去匹配对应分区。
+
 ### 注意事项
+
 - rocketmq消费者使用push的方式实现，通过实现并发消费监听类MessageListenerConcurrently实现的消息监听
 - kafka消费者使用poll的方式实现，使用自定义线程池拉取消息，目前仅支持自动提交消费位点，后续看情况扩展
 - 目前支持设置批量消费和广播消费，因此每个消费实例下面都会存在批量消费组合广播消费组
 - **rocketmq的消费组需要创建（生产环境一般都会要求关闭自动创建）**，**创建消费组时需要同时创建批量消费组和广播消费组**，例如：MQS_TEST(消费组)，在创建消费组MQS_TEST时，如果该消费组下会有批量消费和广播消费的需求，那么此时需要另外再创建MQS_TEST_BATCH(批量消费组)、MQS_TEST_BROADCAST(广播消费组)两个消费组。
 - rocketmq的消费策略为CONSUME_FROM_LAST_OFFSET
 - kafka的消费策略为latest
+- Rocketmq中单条消费使用的监听接口是MessageListenerOrderly（为了方便顺序消费），批量消费和广播消费使用的接口是MessageListenerConcurrently
 - 由于AMQP协议天生不支持批量消费，后续可能不会支持rabbitmq和activemq组件（最多支持单条消费）

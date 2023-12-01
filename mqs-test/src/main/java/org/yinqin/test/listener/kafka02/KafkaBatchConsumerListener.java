@@ -2,13 +2,10 @@ package org.yinqin.test.listener.kafka02;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yinqin.mqs.common.MessageAdapter;
 import org.yinqin.mqs.common.entity.AdapterMessage;
 import org.yinqin.mqs.common.handler.MessageHandler;
-import org.yinqin.mqs.common.manager.ProducerManager;
-import org.yinqin.test.listener.rocketmq02.SequentialConsumer;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -22,13 +19,10 @@ import java.util.List;
  * @since 1.0.5
  */
 @Component("KafkaBatchConsumerListener-kafka02")
-@MessageAdapter(instanceId = "kafka01",topicName = "MQS_TEST_TOPIC_BATCH", isBatch = true)
+@MessageAdapter(instanceId ="kafka02", topicName = "MQS_TEST_TOPIC_BATCH", isBatch = true)
 public class KafkaBatchConsumerListener implements MessageHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(org.yinqin.test.listener.kafka01.KafkaBatchConsumerListener.class);
-
-    @Autowired
-    ProducerManager producerManager;
+    private static final Logger logger = LoggerFactory.getLogger(KafkaBatchConsumerListener.class);
 
     @Override
     public void process(AdapterMessage message) throws Exception {
@@ -39,16 +33,7 @@ public class KafkaBatchConsumerListener implements MessageHandler {
     public void process(List<AdapterMessage> messages) throws Exception {
         logger.info("监听到批量消息，消息总数为：{}", messages.size());
         messages.forEach(message -> {
-            String messageStr = new String(message.getBody(), StandardCharsets.UTF_8);
-            int i = Integer.parseInt(messageStr);
-            if (SequentialConsumer.getInstance().getConsumerId().get() == i) {
-                logger.info("顺序消费，TOPIC：{}，消息内容是：{}", message.getTopic(), new String(message.getBody(), StandardCharsets.UTF_8));
-                SequentialConsumer.getInstance().getConsumerId().addAndGet(1);
-            } else {
-                producerManager.getDefaultInstance().sendMessage(message);
-                logger.error("非顺序消费，拒绝消费");
-            }
+            logger.info("收到消息，TOPIC：{}，消息内容是：{}", message.getTopic(), new String(message.getBody(), StandardCharsets.UTF_8));
         });
     }
 }
-

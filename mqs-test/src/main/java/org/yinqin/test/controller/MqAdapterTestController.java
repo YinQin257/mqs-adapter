@@ -12,7 +12,6 @@ import org.yinqin.mqs.common.entity.MessageCallback;
 import org.yinqin.mqs.common.entity.MessageSendResult;
 import org.yinqin.mqs.common.service.MessageProducer;
 import org.yinqin.mqs.common.manager.ProducerManager;
-import org.yinqin.test.listener.rocketmq02.SequentialConsumer;
 
 import java.nio.charset.StandardCharsets;
 
@@ -80,8 +79,7 @@ public class MqAdapterTestController {
      */
     private void asyncPubMessage(String topic, Integer pubCount,MessageProducer producer) {
         for (int i = 0; i < pubCount; i++) {
-            AdapterMessage message = AdapterMessage.builder().topic(topic).body(("" + SequentialConsumer.getInstance().getProducerId().get()).getBytes(StandardCharsets.UTF_8)).build();
-            SequentialConsumer.getInstance().getProducerId().addAndGet(1);
+            AdapterMessage message = AdapterMessage.builder().topic(topic).body("This is a async message".getBytes(StandardCharsets.UTF_8)).build();
             producer.sendMessage(message, new MessageCallback() {
                 @Override
                 public void onSuccess() {
@@ -105,8 +103,7 @@ public class MqAdapterTestController {
      */
     private void syncPubMessage(String topic, Integer pubCount,MessageProducer producer) {
         for (int i = 0; i < pubCount; i++) {
-            AdapterMessage message = AdapterMessage.builder().topic(topic).body(("" + SequentialConsumer.getInstance().getProducerId().get()).getBytes(StandardCharsets.UTF_8)).bizKey("9999").build();
-            SequentialConsumer.getInstance().getProducerId().addAndGet(1);
+            AdapterMessage message = AdapterMessage.builder().topic(topic).body("This is a sync message".getBytes(StandardCharsets.UTF_8)).build();
             MessageSendResult send = producer.sendMessage(message);
             if (send.getStatus() == Constants.SUCCESS) logger.info("消息同步发送成功");
             else logger.info("消息同步发送失败,原因:" + send.getThrowable().getMessage());

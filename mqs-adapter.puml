@@ -1,0 +1,64 @@
+@startuml
+package "manager" {
+    class ProducerManager
+    class ConsumerManager
+}
+package "AutoConfiguration" {
+    class ProducerAutoConfiguration
+    class ConsumerAutoConfiguration
+
+}
+package "Producer" {
+    interface MessageProducer
+    class CustomRocketmqProducer
+    class CustomKafkaProducer
+    interface MessageCallback
+
+    class MessageSendResult
+}
+package "Consumer" {
+    abstract class MessageConsumer
+    class CustomRocketmqConsumer
+    class CustomKafkaConsumer
+    class PollWorker
+}
+package "Factory" {
+    abstract class ProducerFactory
+    abstract class ConsumerFactory
+    class KafkaConsumerFactory
+    class KafkaProducerFactory
+    class RocketmqConsumerFactory
+    class RocketmqProducerFactory
+}
+"ProducerManager" -[hidden]-> "AutoConfiguration"
+"ConsumerManager" -[hidden]-> "AutoConfiguration"
+"ProducerAutoConfiguration" -[hidden]-> "Factory"
+"ConsumerAutoConfiguration" -[hidden]-> "Factory"
+"RocketmqProducerFactory" -[hidden]-> "Producer"
+"KafkaConsumerFactory" -[hidden]-> "Consumer"
+"ConsumerFactory" -[hidden]-> "KafkaConsumerFactory"
+"ConsumerFactory" -[hidden]-> "RocketmqConsumerFactory"
+"ProducerFactory" -[hidden]-> "KafkaProducerFactory"
+"ProducerFactory" -[hidden]-> "RocketmqProducerFactory"
+ProducerFactory <|-- RocketmqProducerFactory
+ProducerFactory <|-- KafkaProducerFactory
+MessageConsumer <|-- CustomRocketmqConsumer
+MessageConsumer <|-- CustomKafkaConsumer
+ConsumerFactory <|-- KafkaConsumerFactory
+MessageProducer <|.. CustomKafkaProducer
+MessageProducer <|.. CustomRocketmqProducer
+ConsumerFactory <|-- RocketmqConsumerFactory
+ProducerAutoConfiguration x--> ProducerManager
+ConsumerAutoConfiguration x--> ConsumerManager
+CustomKafkaConsumer x--> PollWorker
+ProducerAutoConfiguration x-> ProducerFactory
+ConsumerAutoConfiguration x--> ConsumerFactory
+CustomRocketmqProducer x--> MessageCallback
+CustomRocketmqProducer x--> MessageSendResult
+CustomKafkaProducer x--> MessageCallback
+CustomKafkaProducer x--> MessageSendResult
+KafkaProducerFactory x--> MessageProducer
+RocketmqProducerFactory x--> MessageProducer
+KafkaConsumerFactory x--> MessageConsumer
+RocketmqConsumerFactory x--> MessageConsumer
+@enduml
