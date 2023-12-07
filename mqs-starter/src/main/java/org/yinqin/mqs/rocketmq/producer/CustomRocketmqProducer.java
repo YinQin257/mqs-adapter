@@ -4,11 +4,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.client.AccessChannel;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.client.producer.SendStatus;
+import org.apache.rocketmq.client.producer.*;
 import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yinqin.mqs.common.Constants;
@@ -19,6 +17,7 @@ import org.yinqin.mqs.common.entity.MessageSendResult;
 import org.yinqin.mqs.common.service.MessageProducer;
 import org.yinqin.mqs.common.util.ConvertUtil;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 public class CustomRocketmqProducer implements MessageProducer {
 
     private final Logger logger = LoggerFactory.getLogger(CustomRocketmqProducer.class);
+
+    private static final String SYNC_SEND_ERROR_MESSAGE = "同步消息发送失败，失败原因：";
 
     /**
      * 实例ID
@@ -53,7 +54,7 @@ public class CustomRocketmqProducer implements MessageProducer {
     public CustomRocketmqProducer(String instanceId, AdapterProperties rocketmqProperties) {
         this.instanceId = instanceId;
         this.rocketmqProperties = rocketmqProperties;
-        logger.info("实例：{} 生产者创建中，创建配置：{}", instanceId, rocketmqProperties.toString());
+        logger.info("实例：{} 生产者创建中，创建配置：{}", instanceId, rocketmqProperties);
         String groupName = ConvertUtil.convertName(rocketmqProperties.getGroupName(), rocketmqProperties.getGroup());
         if (rocketmqProperties.getRocketmq().getAcl().isEnabled()) {
             producer = new DefaultMQProducer(groupName, new AclClientRPCHook(rocketmqProperties.getRocketmq().getAcl()));
@@ -86,18 +87,14 @@ public class CustomRocketmqProducer implements MessageProducer {
      */
     @Override
     public MessageSendResult sendMessage(AdapterMessage adapterMessage) {
-        Message message = ConvertUtil.AdapterMessageToRocketmqMessage(adapterMessage, rocketmqProperties.getTopic());
+        Message message = ConvertUtil.adapterMessageToRocketmqMessage(adapterMessage, rocketmqProperties.getTopic());
 
         MessageSendResult messageSendResult = new MessageSendResult();
         try {
             String bizKey = adapterMessage.getBizKey();
             SendResult sendResult;
             if (StringUtils.isNotBlank(bizKey) && StringUtils.isNumeric(bizKey)) {
-                sendResult = producer.send(message, (list, message1, o) -> {
-                    int id = o.hashCode();
-                    int index = id % list.size();
-                    return list.get(index);
-                },bizKey);
+                sendResult = producer.send(message, new CustomMessageQueueSelector(),bizKey);
             } else {
                 sendResult = producer.send(message);
             }
@@ -108,12 +105,26 @@ public class CustomRocketmqProducer implements MessageProducer {
                 messageSendResult.setStatus(Constants.ERROR);
                 messageSendResult.setThrowable(new MQClientException(0, sendResult.getSendStatus().name()));
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // 恢复中断状态
+            messageSendResult.setStatus(Constants.ERROR);
+            messageSendResult.setThrowable(e);
+            logger.error(SYNC_SEND_ERROR_MESSAGE, e);
         } catch (Exception e) {
             messageSendResult.setStatus(Constants.ERROR);
             messageSendResult.setThrowable(e);
-            logger.error("同步消息发送失败，失败原因：", e);
+            logger.error(SYNC_SEND_ERROR_MESSAGE, e);
         }
         return messageSendResult;
+    }
+
+    private static class CustomMessageQueueSelector implements MessageQueueSelector {
+        @Override
+        public MessageQueue select(List<MessageQueue> list, Message message, Object o) {
+            int id = (o.hashCode() & 0x7FFFFFFF) % 100 + 1;
+            int index = id % list.size();
+            return list.get(index);
+        }
     }
 
     /**
@@ -126,17 +137,13 @@ public class CustomRocketmqProducer implements MessageProducer {
      */
     @Override
     public MessageSendResult sendMessage(AdapterMessage adapterMessage, long timeout, TimeUnit unit) {
-        Message message = ConvertUtil.AdapterMessageToRocketmqMessage(adapterMessage, rocketmqProperties.getTopic());
+        Message message = ConvertUtil.adapterMessageToRocketmqMessage(adapterMessage, rocketmqProperties.getTopic());
         MessageSendResult messageSendResult = new MessageSendResult();
         try {
             String bizKey = adapterMessage.getBizKey();
             SendResult sendResult;
             if (StringUtils.isNotBlank(bizKey) && StringUtils.isNumeric(bizKey)) {
-                sendResult = producer.send(message, (list, message1, o) -> {
-                    int id = o.hashCode();
-                    int index = id % list.size();
-                    return list.get(index);
-                },bizKey,unit.toMillis(timeout));
+                sendResult = producer.send(message, new CustomMessageQueueSelector() ,bizKey,unit.toMillis(timeout));
             } else {
                 sendResult = producer.send(message, unit.toMillis(timeout));
             }
@@ -147,10 +154,15 @@ public class CustomRocketmqProducer implements MessageProducer {
                 messageSendResult.setStatus(Constants.ERROR);
                 messageSendResult.setThrowable(new MQClientException(0, sendResult.getSendStatus().name()));
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // 恢复中断状态
+            messageSendResult.setStatus(Constants.ERROR);
+            messageSendResult.setThrowable(e);
+            logger.error(SYNC_SEND_ERROR_MESSAGE, e);
         } catch (Exception e) {
             messageSendResult.setStatus(Constants.ERROR);
             messageSendResult.setThrowable(e);
-            logger.error("同步消息发送失败，失败原因：", e);
+            logger.error(SYNC_SEND_ERROR_MESSAGE, e);
         }
         return messageSendResult;
     }
@@ -163,44 +175,37 @@ public class CustomRocketmqProducer implements MessageProducer {
      */
     @Override
     public void sendMessage(AdapterMessage adapterMessage, MessageCallback callback) {
-        Message message = ConvertUtil.AdapterMessageToRocketmqMessage(adapterMessage, rocketmqProperties.getTopic());
+        Message message = ConvertUtil.adapterMessageToRocketmqMessage(adapterMessage, rocketmqProperties.getTopic());
         try {
             String bizKey = adapterMessage.getBizKey();
+            SendCallback sendCallback = new SendCallback() {
+                @Override
+                public void onSuccess(SendResult sendResult) {
+                    adapterMessage.setMsgId(sendResult.getMsgId());
+                    if (callback != null) callback.onSuccess();
+                }
+
+                @Override
+                public void onException(Throwable e) {
+                    if (callback != null) callback.onError(e);
+                }
+            };
             if (StringUtils.isNotBlank(bizKey) && StringUtils.isNumeric(bizKey)) {
-                producer.send(message, (list, message1, o) -> {
-                    int id = o.hashCode();
-                    int index = id % list.size();
-                    return list.get(index);
-                },bizKey,new SendCallback() {
-                    @Override
-                    public void onSuccess(SendResult sendResult) {
-                        adapterMessage.setMsgId(sendResult.getMsgId());
-                        if (callback != null) callback.onSuccess();
-                    }
-
-                    @Override
-                    public void onException(Throwable e) {
-                        if (callback != null) callback.onError(e);
-                    }
-                });
+                producer.send(message, new CustomMessageQueueSelector() ,bizKey,sendCallback);
             } else {
-                producer.send(message, new SendCallback() {
-                    @Override
-                    public void onSuccess(SendResult sendResult) {
-                        adapterMessage.setMsgId(sendResult.getMsgId());
-                        if (callback != null) callback.onSuccess();
-                    }
-
-                    @Override
-                    public void onException(Throwable e) {
-                        if (callback != null) callback.onError(e);
-                    }
-                });
+                producer.send(message, sendCallback);
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // 恢复中断状态
+            logger.error("异步消息发送失败，失败原因：", e);
         } catch (Exception e) {
             logger.error("异步消息发送失败，失败原因：", e);
         }
     }
+
+
+
+
 
     /**
      * 停止rocketmq生产者

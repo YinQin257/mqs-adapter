@@ -10,7 +10,7 @@ import org.yinqin.mqs.common.service.MessageProducer;
  * @author YinQin
  * @version 1.0.6
  * @createDate 2023年11月27日
- * @see org.yinqin.mqs.common.factory.ProducerFactory
+ * @see ProducerFactory
  * @since 1.0.6
  */
 public class KafkaProducerFactory extends ProducerFactory {

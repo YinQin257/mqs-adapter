@@ -2,8 +2,6 @@ package org.yinqin.mqs.kafka.consumer.factory;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yinqin.mqs.common.Constants;
 import org.yinqin.mqs.common.config.MqsProperties;
 import org.yinqin.mqs.common.factory.ConsumerFactory;

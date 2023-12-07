@@ -14,6 +14,7 @@ import org.yinqin.mqs.common.Constants;
 import org.yinqin.mqs.common.MessageAdapter;
 import org.yinqin.mqs.common.config.MqsProperties;
 import org.yinqin.mqs.common.entity.AdapterMessage;
+import org.yinqin.mqs.common.exception.MqsConsumerException;
 import org.yinqin.mqs.common.handler.MessageHandler;
 
 import java.util.ArrayList;
@@ -64,7 +65,7 @@ public interface CreateRocketmqConsumer {
             try {
                 consumer.subscribe(topic, Constants.WILDCARD);
             } catch (MQClientException e) {
-                throw new RuntimeException(e);
+                throw new MqsConsumerException("订阅Topic失败: " + topic, e);
             }
         }
     }

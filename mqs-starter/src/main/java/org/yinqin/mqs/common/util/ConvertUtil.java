@@ -16,6 +16,11 @@ import org.yinqin.mqs.common.entity.AdapterMessage;
  * @since 1.0.4
  */
 public class ConvertUtil {
+
+    private ConvertUtil() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated.");
+    }
+
     /**
      * topic名称或者消费组名称转换
      *
@@ -41,7 +46,7 @@ public class ConvertUtil {
      * @param message 消息
      * @return rocketmq原生消息
      */
-    public static Message AdapterMessageToRocketmqMessage(AdapterMessage message, AdapterProperties.ConvertProperties topicProperties) {
+    public static Message adapterMessageToRocketmqMessage(AdapterMessage message, AdapterProperties.ConvertProperties topicProperties) {
         return new Message(ConvertUtil.convertName(message.getTopic(),topicProperties), message.getTag(), message.getBizKey(), message.getBody());
     }
 
@@ -50,7 +55,7 @@ public class ConvertUtil {
      * @param message 消息
      * @return kafka原生消息
      */
-    public static ProducerRecord<String, byte[]> AdapterMessageToKafkaMessage(AdapterMessage message, AdapterProperties.ConvertProperties topicProperties) {
+    public static ProducerRecord<String, byte[]> adapterMessageToKafkaMessage(AdapterMessage message, AdapterProperties.ConvertProperties topicProperties) {
         return new ProducerRecord<>(ConvertUtil.convertName(message.getTopic(),topicProperties), null, message.getBizKey(), message.getBody(), null);
     }
 }

@@ -10,7 +10,7 @@ import java.util.LinkedHashMap;
  * @author YinQin
  * @version 1.0.4
  * @createDate 2023年10月13日
- * @see java.util.LinkedHashMap
+ * @see LinkedHashMap
  * @since 1.0.0
  */
 public class ProducerManager extends LinkedHashMap<String, MessageProducer> {

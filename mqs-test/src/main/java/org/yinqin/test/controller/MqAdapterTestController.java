@@ -10,8 +10,8 @@ import org.yinqin.mqs.common.Constants;
 import org.yinqin.mqs.common.entity.AdapterMessage;
 import org.yinqin.mqs.common.entity.MessageCallback;
 import org.yinqin.mqs.common.entity.MessageSendResult;
-import org.yinqin.mqs.common.service.MessageProducer;
 import org.yinqin.mqs.common.manager.ProducerManager;
+import org.yinqin.mqs.common.service.MessageProducer;
 
 import java.nio.charset.StandardCharsets;
 

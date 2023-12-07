@@ -25,12 +25,12 @@ public class RocketmqBatchConsumerListener implements MessageHandler {
     private static final Logger logger = LoggerFactory.getLogger(RocketmqBatchConsumerListener.class);
 
     @Override
-    public void process(AdapterMessage message) throws Exception {
+    public void process(AdapterMessage message)  {
 
     }
 
     @Override
-    public void process(List<AdapterMessage> messages) throws Exception {
+    public void process(List<AdapterMessage> messages)  {
         logger.info("监听到批量消息，消息总数为：{}", messages.size());
         messages.forEach(message -> {
             logger.info("收到消息，TOPIC：{}，消息内容是：{}", message.getTopic(), new String(message.getBody(), StandardCharsets.UTF_8));

@@ -185,7 +185,7 @@ public class MqsProperties {
              * @author YinQin
              * @version 1.0.3
              * @createDate 2023年10月13日
-             * @see org.apache.rocketmq.acl.common.SessionCredentials
+             * @see SessionCredentials
              * @since 1.0.0
              */
             @EqualsAndHashCode(callSuper = true)

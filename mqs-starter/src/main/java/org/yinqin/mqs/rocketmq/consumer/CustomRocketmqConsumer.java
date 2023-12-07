@@ -8,6 +8,7 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yinqin.mqs.common.config.MqsProperties.AdapterProperties;
+import org.yinqin.mqs.common.exception.MqsConsumerException;
 import org.yinqin.mqs.common.service.MessageConsumer;
 
 /**
@@ -16,7 +17,7 @@ import org.yinqin.mqs.common.service.MessageConsumer;
  * @author YinQin
  * @version 1.0.6
  * @createDate 2023年10月13日
- * @see org.yinqin.mqs.common.service.MessageConsumer
+ * @see MessageConsumer
  * @since 1.0.0
  */
 public class CustomRocketmqConsumer implements MessageConsumer {
@@ -52,7 +53,7 @@ public class CustomRocketmqConsumer implements MessageConsumer {
         try {
             consumer.start();
         } catch (MQClientException e) {
-            throw new RuntimeException(e);
+            throw new MqsConsumerException("启动消费组失败，实例ID：" + instanceId, e);
         }
     }
 

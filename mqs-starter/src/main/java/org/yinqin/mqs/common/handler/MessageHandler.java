@@ -1,6 +1,7 @@
 package org.yinqin.mqs.common.handler;
 
 import org.yinqin.mqs.common.entity.AdapterMessage;
+import org.yinqin.mqs.common.exception.MqsConsumerException;
 
 import java.util.List;
 
@@ -20,7 +21,7 @@ public interface MessageHandler {
      * @param message 消息
      * @throws Exception 异常
      */
-    void process(AdapterMessage message) throws Exception;
+    void process(AdapterMessage message) throws MqsConsumerException;
 
     /**
      * 批量消息处理方法
@@ -28,5 +29,5 @@ public interface MessageHandler {
      * @param messages 消息
      * @throws Exception 异常
      */
-    void process(List<AdapterMessage> messages) throws Exception;
+    void process(List<AdapterMessage> messages) throws MqsConsumerException;
 }

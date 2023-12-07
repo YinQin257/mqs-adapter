@@ -14,7 +14,7 @@ import org.yinqin.mqs.kafka.PollWorker;
  * @author YinQin
  * @version 1.0.6
  * @createDate 2023年10月13日
- * @see org.yinqin.mqs.common.service.MessageConsumer
+ * @see MessageConsumer
  * @since 1.0.0
  */
 public class CustomKafkaConsumer implements MessageConsumer {

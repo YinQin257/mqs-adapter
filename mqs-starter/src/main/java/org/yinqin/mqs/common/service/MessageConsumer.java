@@ -8,7 +8,7 @@ import org.springframework.beans.factory.DisposableBean;
  * @author YinQin
  * @version 1.0.3
  * @createDate 2023年10月13日
- * @see org.springframework.beans.factory.DisposableBean
+ * @see DisposableBean
  * @since 1.0.0
  */
 public interface MessageConsumer extends DisposableBean {

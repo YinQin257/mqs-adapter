@@ -25,12 +25,12 @@ public class RocketmqBroadcastConsumerListener implements MessageHandler {
     private static final Logger logger = LoggerFactory.getLogger(RocketmqBroadcastConsumerListener.class);
 
     @Override
-    public void process(AdapterMessage message) throws Exception {
+    public void process(AdapterMessage message)  {
         logger.info("收到消息，TOPIC：{}，消息内容是：{}", message.getTopic(), new String(message.getBody(), StandardCharsets.UTF_8));
     }
 
     @Override
-    public void process(List<AdapterMessage> messages) throws Exception {
+    public void process(List<AdapterMessage> messages) {
 
     }
 }

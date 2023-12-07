@@ -25,12 +25,14 @@ import java.util.concurrent.TimeUnit;
  * @author YinQin
  * @version 1.0.6
  * @createDate 2023年10月13日
- * @see org.yinqin.mqs.common.service.MessageProducer
+ * @see MessageProducer
  * @since 1.0.0
  */
 public class CustomKafkaProducer implements MessageProducer {
 
     private final Logger logger = LoggerFactory.getLogger(CustomKafkaProducer.class);
+
+    private static final String ERROR_MESSAGE = "同步消息发送失败，失败原因：";
 
     /**
      * 实例ID
@@ -57,7 +59,7 @@ public class CustomKafkaProducer implements MessageProducer {
      */
     @Override
     public void start() {
-        logger.info("实例：{} 生产者启动中，启动配置：{}", instanceId, kafkaProperties.toString());
+        logger.info("实例：{} 生产者启动中，启动配置：{}", instanceId, kafkaProperties);
         Properties properties = kafkaProperties.getKafka().getClientConfig();
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
@@ -73,16 +75,22 @@ public class CustomKafkaProducer implements MessageProducer {
      */
     @Override
     public MessageSendResult sendMessage(AdapterMessage message) {
-        ProducerRecord<String, byte[]> producerRecord = ConvertUtil.AdapterMessageToKafkaMessage(message, kafkaProperties.getTopic());
+        ProducerRecord<String, byte[]> producerRecord = ConvertUtil.adapterMessageToKafkaMessage(message, kafkaProperties.getTopic());
         MessageSendResult messageSendResult = new MessageSendResult();
         try {
             Future<RecordMetadata> future = kafkaProducer.send(producerRecord);
             future.get(3000, TimeUnit.MILLISECONDS);
             messageSendResult.setStatus(Constants.SUCCESS);
+        } catch (InterruptedException e) {
+            // 恢复中断状态
+            Thread.currentThread().interrupt();
+            messageSendResult.setStatus(Constants.ERROR);
+            messageSendResult.setThrowable(e);
+            logger.error(ERROR_MESSAGE, e);
         } catch (Exception e) {
             messageSendResult.setStatus(Constants.ERROR);
             messageSendResult.setThrowable(e);
-            logger.error("同步消息发送失败，失败原因：", e);
+            logger.error(ERROR_MESSAGE, e);
         }
         return messageSendResult;
     }
@@ -97,16 +105,22 @@ public class CustomKafkaProducer implements MessageProducer {
      */
     @Override
     public MessageSendResult sendMessage(AdapterMessage message, long timeout, TimeUnit unit) {
-        ProducerRecord<String, byte[]> producerRecord = ConvertUtil.AdapterMessageToKafkaMessage(message, kafkaProperties.getTopic());
+        ProducerRecord<String, byte[]> producerRecord = ConvertUtil.adapterMessageToKafkaMessage(message, kafkaProperties.getTopic());
         MessageSendResult messageSendResult = new MessageSendResult();
         try {
             Future<RecordMetadata> future = kafkaProducer.send(producerRecord);
             future.get(timeout, unit);
             messageSendResult.setStatus(Constants.SUCCESS);
+        } catch (InterruptedException e) {
+            // 恢复中断状态
+            Thread.currentThread().interrupt();
+            messageSendResult.setStatus(Constants.ERROR);
+            messageSendResult.setThrowable(e);
+            logger.error(ERROR_MESSAGE, e);
         } catch (Exception e) {
             messageSendResult.setStatus(Constants.ERROR);
             messageSendResult.setThrowable(e);
-            logger.error("同步消息发送失败，失败原因：", e);
+            logger.error(ERROR_MESSAGE, e);
         }
         return messageSendResult;
     }
@@ -119,7 +133,7 @@ public class CustomKafkaProducer implements MessageProducer {
      */
     @Override
     public void sendMessage(AdapterMessage message, MessageCallback callback) {
-        ProducerRecord<String, byte[]> producerRecord = ConvertUtil.AdapterMessageToKafkaMessage(message, kafkaProperties.getTopic());
+        ProducerRecord<String, byte[]> producerRecord = ConvertUtil.adapterMessageToKafkaMessage(message, kafkaProperties.getTopic());
         try {
             kafkaProducer.send(producerRecord, (recordMetadata, e) -> {
                 if (callback == null) return;
