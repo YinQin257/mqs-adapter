@@ -4,11 +4,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.client.AccessChannel;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.client.producer.SendStatus;
+import org.apache.rocketmq.client.producer.*;
 import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yinqin.mqs.common.Constants;
@@ -19,6 +17,7 @@ import org.yinqin.mqs.common.entity.MessageSendResult;
 import org.yinqin.mqs.common.service.MessageProducer;
 import org.yinqin.mqs.common.util.ConvertUtil;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -93,11 +92,7 @@ public class CustomRocketmqProducer implements MessageProducer {
             String bizKey = adapterMessage.getBizKey();
             SendResult sendResult;
             if (StringUtils.isNotBlank(bizKey) && StringUtils.isNumeric(bizKey)) {
-                sendResult = producer.send(message, (list, message1, o) -> {
-                    int id = o.hashCode();
-                    int index = id % list.size();
-                    return list.get(index);
-                },bizKey);
+                sendResult = producer.send(message, new CustomMessageQueueSelector(),bizKey);
             } else {
                 sendResult = producer.send(message);
             }
@@ -116,6 +111,15 @@ public class CustomRocketmqProducer implements MessageProducer {
         return messageSendResult;
     }
 
+    private static class CustomMessageQueueSelector implements MessageQueueSelector {
+        @Override
+        public MessageQueue select(List<MessageQueue> list, Message message, Object o) {
+            int id = (o.hashCode() & 0x7FFFFFFF) % 100 + 1;
+            int index = id % list.size();
+            return list.get(index);
+        }
+    }
+
     /**
      * 同步发送消息方法
      *
@@ -132,11 +136,7 @@ public class CustomRocketmqProducer implements MessageProducer {
             String bizKey = adapterMessage.getBizKey();
             SendResult sendResult;
             if (StringUtils.isNotBlank(bizKey) && StringUtils.isNumeric(bizKey)) {
-                sendResult = producer.send(message, (list, message1, o) -> {
-                    int id = o.hashCode();
-                    int index = id % list.size();
-                    return list.get(index);
-                },bizKey,unit.toMillis(timeout));
+                sendResult = producer.send(message, new CustomMessageQueueSelector() ,bizKey,unit.toMillis(timeout));
             } else {
                 sendResult = producer.send(message, unit.toMillis(timeout));
             }
@@ -167,11 +167,7 @@ public class CustomRocketmqProducer implements MessageProducer {
         try {
             String bizKey = adapterMessage.getBizKey();
             if (StringUtils.isNotBlank(bizKey) && StringUtils.isNumeric(bizKey)) {
-                producer.send(message, (list, message1, o) -> {
-                    int id = o.hashCode();
-                    int index = id % list.size();
-                    return list.get(index);
-                },bizKey,new SendCallback() {
+                producer.send(message, new CustomMessageQueueSelector() ,bizKey,new SendCallback() {
                     @Override
                     public void onSuccess(SendResult sendResult) {
                         adapterMessage.setMsgId(sendResult.getMsgId());
